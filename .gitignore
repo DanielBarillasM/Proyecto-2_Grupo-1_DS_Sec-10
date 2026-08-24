@@ -219,6 +219,7 @@ __marimo__/
 
 # Datos de Kaggle: solo local, no se redistribuyen
 data/raw/
+data
 
 # memsearch (estado local de indexado y memoria)
 .memsearch/

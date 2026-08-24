@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MAP — Charting Student Math Misunderstandings</title>
+  <style>
+    :root{--navy:#102a43;--blue:#2457a7;--cyan:#28a9c7;--gold:#f2b84b;--ink:#172b3a;--muted:#607487;--paper:#f6f8fb;--white:#fff;--red:#d94b4b;--green:#2f9b77}
+    *{box-sizing:border-box} html,body{margin:0;width:100%;height:100%;overflow:hidden;background:#071523;color:var(--ink);font-family:"Segoe UI",Inter,Arial,sans-serif}
+    body:before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 85% 12%,#2457a755,transparent 26%),radial-gradient(circle at 12% 88%,#28a9c733,transparent 24%);pointer-events:none}
+    .deck{height:100%;position:relative}.slide{display:none;position:absolute;inset:0;padding:5.5vh 6vw 8vh;background:linear-gradient(135deg,#fff 0%,#f4f7fb 72%,#e7f2f8 100%);overflow:auto}.slide.active{display:flex;flex-direction:column;animation:enter .35s ease-out}@keyframes enter{from{opacity:.3;transform:translateX(20px)}to{opacity:1;transform:none}}
+    .slide:after{content:"";position:absolute;right:-10vw;top:-14vw;width:32vw;height:32vw;border:5vw solid #2457a70c;border-radius:50%;pointer-events:none}
+    .cover{justify-content:center;color:#fff;background:linear-gradient(120deg,#0b2037 0%,#173e70 58%,#167e9c 100%)}.cover:after{border-color:#fff0;box-shadow:0 0 0 4vw #ffffff0b,0 0 0 9vw #ffffff09}.cover h1{font-size:clamp(2.4rem,5vw,5.2rem);max-width:1050px;line-height:.98;margin:0 0 2.5vh}.eyebrow{color:var(--cyan);font-weight:800;text-transform:uppercase;letter-spacing:.15em;font-size:.85rem}.cover .eyebrow{color:#7be0f2}.subtitle{font-size:clamp(1.05rem,1.8vw,1.7rem);max-width:900px;line-height:1.45;color:#dbeaf6}.rule{height:5px;width:110px;background:linear-gradient(90deg,var(--gold),var(--cyan));border-radius:4px;margin:2vh 0}.meta{margin-top:4vh;color:#c8d9e8;line-height:1.65}
+    h2{font-size:clamp(1.9rem,3.2vw,3.3rem);line-height:1.05;margin:.3vh 0 2.8vh;color:var(--navy);max-width:1100px}h3{margin:.2rem 0 .65rem;color:var(--blue);font-size:1.15rem}p{font-size:clamp(.95rem,1.28vw,1.26rem);line-height:1.48;margin:.35rem 0}.lead{font-size:clamp(1.15rem,1.75vw,1.75rem);max-width:1050px;line-height:1.42;color:#334e68}.accent{color:var(--blue)}.small{font-size:.82rem;color:var(--muted)}
+    .grid{display:grid;gap:1.4vw;align-items:stretch}.g2{grid-template-columns:repeat(2,minmax(0,1fr))}.g3{grid-template-columns:repeat(3,minmax(0,1fr))}.g4{grid-template-columns:repeat(4,minmax(0,1fr))}.card{position:relative;background:#fff;border:1px solid #dce5ed;border-radius:18px;padding:1.35rem;box-shadow:0 10px 30px #183b5b12}.card.top{border-top:5px solid var(--cyan)}.card.gold{border-top-color:var(--gold)}.card.red{border-top-color:var(--red)}.card.green{border-top-color:var(--green)}.card p,.card li{font-size:clamp(.84rem,1.05vw,1.04rem);line-height:1.42}.metric{font-size:clamp(2rem,3.4vw,3.6rem);font-weight:850;line-height:1;color:var(--blue);margin:.2rem 0}.metric.gold{color:#d18d13}.metric.green{color:var(--green)}
+    ul{margin:.35rem 0;padding-left:1.25rem}li{font-size:clamp(.9rem,1.15vw,1.14rem);line-height:1.42;margin:.35rem 0}li::marker{color:var(--cyan)}.tag{display:inline-block;padding:.3rem .65rem;margin:.2rem .2rem .2rem 0;border-radius:999px;background:#e7f1fb;color:var(--blue);font-size:.8rem;font-weight:700}.callout{border-left:6px solid var(--gold);background:#fff7e7;border-radius:0 14px 14px 0;padding:1rem 1.2rem;margin-top:1rem;font-size:clamp(.93rem,1.15vw,1.12rem)}
+    .figure{min-height:0;display:flex;align-items:center;justify-content:center;background:#fff;border:1px solid #dbe4ec;border-radius:18px;padding:.7rem;box-shadow:0 10px 30px #183b5b12}.figure img{display:block;max-width:100%;max-height:56vh;object-fit:contain}.figure.tall img{max-height:64vh}.caption{font-size:.78rem;color:var(--muted);margin-top:.45rem;text-align:center}.split{display:grid;grid-template-columns:.9fr 1.35fr;gap:2vw;min-height:0;align-items:center;flex:1}.split.reverse{grid-template-columns:1.35fr .9fr}.flow{display:flex;align-items:center;gap:.65rem;flex-wrap:wrap;margin:2vh 0}.node{flex:1;min-width:145px;background:#fff;border:2px solid #d6e3ee;border-radius:16px;padding:1rem;text-align:center;font-weight:750;color:var(--navy);box-shadow:0 8px 25px #183b5b10}.arrow{font-size:1.5rem;color:var(--cyan);font-weight:900}.formula{font-family:Cambria,"Times New Roman",serif;background:#102a43;color:#fff;border-radius:15px;padding:1.1rem 1.4rem;font-size:clamp(1.05rem,1.55vw,1.5rem);text-align:center;margin:1rem 0}.rank{display:flex;gap:.7rem;margin:1rem 0}.rank span{flex:1;border-radius:14px;padding:1rem;background:#e7f1fb;color:var(--blue);font-weight:800;text-align:center}.rank span:first-child{background:var(--blue);color:#fff}
+    .matrix{width:100%;border-collapse:separate;border-spacing:8px}.matrix td{background:#fff;border:1px solid #dce5ed;border-radius:12px;padding:.8rem;text-align:center;font-size:.88rem}.matrix th{font-size:.82rem;color:var(--muted)}.check{color:var(--green);font-weight:850}.warn{color:var(--red);font-weight:850}.repo{font-family:Consolas,monospace;background:#0b2037;color:#d7ebf7;padding:1rem 1.2rem;border-radius:14px;font-size:clamp(.72rem,.9vw,.93rem);line-height:1.6;white-space:pre}.qr{width:min(23vh,180px);height:auto;background:#fff;border-radius:14px;padding:8px}.refs{columns:2;column-gap:2rem}.refs p{break-inside:avoid;font-size:clamp(.68rem,.82vw,.84rem);padding-left:1.2rem;text-indent:-1.2rem;margin:0 0 .65rem;line-height:1.28}
+    .cite{margin-top:auto;padding-top:1rem;font-size:.7rem;color:#607487}.nav{position:fixed;z-index:10;bottom:0;left:0;right:0;height:48px;background:#071523eb;color:#fff;display:flex;align-items:center;gap:.7rem;padding:0 1rem;backdrop-filter:blur(8px)}button{border:0;border-radius:9px;background:#ffffff15;color:#fff;padding:.45rem .8rem;font-weight:700;cursor:pointer}button:hover{background:#ffffff28}.progress{height:5px;flex:1;background:#ffffff1b;border-radius:5px;overflow:hidden}.progress span{display:block;height:100%;background:linear-gradient(90deg,var(--gold),var(--cyan));transition:width .25s}.counter{font-variant-numeric:tabular-nums;min-width:65px;text-align:right;font-size:.85rem}.hint{font-size:.72rem;color:#a8bdce}
+    body.overview{overflow:auto}body.overview .deck{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;height:auto;padding:18px;background:#071523}body.overview .slide{display:flex;position:relative;inset:auto;height:32vw;min-height:260px;padding:2.3vw;transform:none!important;animation:none;overflow:hidden;border-radius:12px}body.overview .slide *{font-size:min(1.15vw,16px)!important}body.overview .slide h2{font-size:min(2.1vw,30px)!important}body.overview .slide .metric{font-size:min(2.5vw,36px)!important}body.overview .nav{display:none}
+    @media(max-width:800px){.slide{padding:4vh 5vw 9vh}.g3,.g4,.g2,.split,.split.reverse{grid-template-columns:1fr}.slide{overflow:auto}.figure img{max-height:42vh}.hint{display:none}.refs{columns:1}body.overview .deck{grid-template-columns:1fr}body.overview .slide{height:62vw}}
+    @media print{html,body{overflow:visible;background:#fff}.nav{display:none}.deck{height:auto}.slide,.slide.active{display:flex;position:relative;page-break-after:always;width:100%;height:100vh;animation:none}.cite{margin-top:auto}}
+  </style>
+</head>
+<body>
+<main class="deck" id="deck">
+  <section class="slide cover active">
+    <div class="eyebrow">Proyecto 2 · Análisis exploratorio</div><div class="rule"></div>
+    <h1>Charting Student Math Misunderstandings</h1>
+    <p class="subtitle">Exploración de razonamientos matemáticos abiertos para reconocer respuestas correctas, errores y concepciones erróneas mediante Procesamiento del Lenguaje Natural.</p>
+    <div class="meta"><b>CC3084 — Data Science · Sección 10</b><br>Daniel Barillas · Mario Gómez · Marco Romero<br>Universidad del Valle de Guatemala · 2026</div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Situación problemática</div><h2>Una opción correcta no garantiza un razonamiento correcto</h2>
+    <p class="lead">Las respuestas abiertas revelan <b>cómo</b> piensa el estudiante, pero revisarlas manualmente a escala exige tiempo y conocimiento pedagógico.</p>
+    <div class="grid g3" style="margin-top:3vh">
+      <article class="card top"><h3>Señal observable</h3><p>Opción seleccionada y explicación escrita con vocabulario, símbolos y pasos informales.</p></article>
+      <article class="card top gold"><h3>Variable latente</h3><p>La concepción matemática que originó el error puede aparecer aun cuando la respuesta sea correcta.</p></article>
+      <article class="card top green"><h3>Oportunidad</h3><p>NLP puede priorizar patrones probables para apoyar retroalimentación docente, no reemplazarla.</p></article>
+    </div>
+    <div class="callout"><b>Pregunta científica:</b> ¿qué patrones lingüísticos y estructurales permiten distinguir la relación entre corrección, calidad del razonamiento y concepción errónea?</div>
+    <p class="cite">Rittle-Johnson et al. (2025); The Learning Agency (2025).</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Investigación previa</div><h2>El conjunto surge de un benchmark educativo cuidadosamente anotado</h2>
+    <div class="grid g4">
+      <article class="card top"><div class="metric">52,463</div><p>explicaciones en el benchmark completo</p></article>
+      <article class="card top gold"><div class="metric gold">15</div><p>preguntas de matemática</p></article>
+      <article class="card top green"><div class="metric green">27%</div><p>respuestas sintéticas añadidas</p></article>
+      <article class="card top red"><div class="metric">.70–.90</div><p>κ de Cohen reportada entre evaluadores</p></article>
+    </div>
+    <div class="grid g2" style="margin-top:2vh">
+      <article class="card"><h3>Procedencia</h3><p>Respuestas reales de la plataforma Eedi, complementadas con ejemplos sintéticos y revisadas mediante rúbricas construidas por especialistas.</p></article>
+      <article class="card"><h3>Lectura crítica</h3><p>Parte de los errores ortográficos y del cambio a minúsculas fue inyectada artificialmente. El ruido textual no debe interpretarse por completo como conducta natural.</p></article>
+    </div>
+    <p class="cite">Rittle-Johnson et al. (2025), <i>Detecting Math Misconceptions: An AI Benchmark Dataset</i>.</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Reto MAP</div><h2>Una tarea jerárquica evaluada con MAP@3</h2>
+    <div class="split">
+      <div>
+        <div class="flow"><div class="node">Pregunta + opción + explicación</div><div class="arrow">→</div><div class="node">Category</div><div class="arrow">→</div><div class="node">Misconception</div></div>
+        <p>La salida combina la categoría del razonamiento con una concepción errónea específica cuando corresponde.</p>
+        <div class="rank"><span>1.ª predicción</span><span>2.ª</span><span>3.ª</span></div>
+      </div>
+      <div>
+        <div class="formula">AP@3 = promedio de aciertos ponderados por su posición</div>
+        <ul><li>Premia que la etiqueta correcta aparezca temprano.</li><li>Admite hasta tres hipótesis ordenadas.</li><li>La validación debe separar por pregunta para medir generalización real.</li></ul>
+      </div>
+    </div>
+    <p class="cite">King et al. (2025), Kaggle: <i>MAP — Charting Student Math Misunderstandings</i>.</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Datos locales</div><h2>Perfil del archivo analizado, sin reejecutar el notebook</h2>
+    <div class="grid g4">
+      <article class="card top"><div class="metric">36,696</div><p>observaciones</p></article>
+      <article class="card top gold"><div class="metric gold">15</div><p>preguntas únicas</p></article>
+      <article class="card top green"><div class="metric green">35</div><p>opciones de respuesta</p></article>
+      <article class="card top red"><div class="metric">65</div><p>concepciones erróneas</p></article>
+    </div>
+    <table class="matrix" style="margin-top:2vh"><tr><th>Identificador</th><th>Contexto</th><th>Respuesta</th><th>Texto</th><th>Etiquetas</th></tr><tr><td>row_id</td><td>QuestionId</td><td>MC_Answer</td><td>StudentExplanation</td><td>Category<br>Misconception</td></tr></table>
+    <div class="callout">Unidad de análisis: una explicación de estudiante asociada a una pregunta y a la opción que eligió.</div>
+    <p class="cite">Fuente: resultados persistidos en <i>MAP_Student_Math_Misunderstandings.ipynb</i>.</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Distribución de etiquetas</div><h2>La categoría dominante es respuesta correcta con razonamiento correcto</h2>
+    <div class="split reverse">
+      <div class="figure tall"><img src="../report/assets/distribucion_category.png" alt="Distribución de las categorías del razonamiento"></div>
+      <div><div class="metric">40.34%</div><p class="lead">corresponde a <b>True_Correct</b>.</p><ul><li>Las clases no tienen igual frecuencia.</li><li>El error requiere separar opción, razonamiento y concepción.</li><li>Accuracy aislada sería una medida engañosa.</li></ul></div>
+    </div>
+    <p class="cite">Cálculos y figura almacenados en el notebook del proyecto.</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Limpieza y preprocesamiento</div><h2>El 73.1% de ausencia en “Misconception” es principalmente estructural</h2>
+    <div class="grid g3">
+      <article class="card top"><div class="metric">26,820</div><h3>Valores ausentes</h3><p>No equivalen automáticamente a mala calidad: muchas categorías no requieren una concepción errónea.</p></article>
+      <article class="card top gold"><h3>Conservar</h3><p>Negaciones, operadores, fracciones, porcentajes, números y expresiones como “times” o “divide”.</p></article>
+      <article class="card top green"><h3>Normalizar con cuidado</h3><p>Espacios, variantes tipográficas y campos de etiqueta, manteniendo intacta la semántica matemática.</p></article>
+    </div>
+    <div class="callout"><b>Regla clave:</b> no imputar “Misconception” con la moda. La ausencia codifica que la etiqueta no aplica en parte del esquema jerárquico.</div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Desbalance</div><h2>La taxonomía presenta una cola larga de concepciones erróneas</h2>
+    <div class="split reverse"><div class="figure tall"><img src="../report/assets/distribucion_misconceptions.png" alt="Frecuencias de las concepciones erróneas"></div><div><p class="lead">Pocas etiquetas concentran muchos ejemplos; numerosas concepciones son raras.</p><ul><li>Reportar macro-F1 además de métricas globales.</li><li>Usar ponderación o muestreo cuidadoso.</li><li>Analizar errores por etiqueta y por pregunta.</li><li>Predecir primero la categoría y después la concepción.</li></ul></div></div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Calidad textual</div><h2>Las explicaciones son breves, heterogéneas y con señales matemáticas</h2>
+    <div class="split reverse"><div class="figure"><img src="../report/assets/distribuciones_variables_texto.png" alt="Distribuciones de palabras, caracteres y calidad textual"></div><div><ul><li>Mediana aproximada: 15 palabras.</li><li>Existen respuestas vacías o mínimas.</li><li>La ortografía y la puntuación varían.</li><li>El largo no determina por sí solo la corrección.</li></ul><div class="callout">La representación debe combinar texto, números, opción elegida y contexto de la pregunta.</div></div></div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Outliers</div><h2>Los textos largos son casos informativos, no errores automáticos</h2>
+    <div class="split reverse"><div class="figure"><img src="../report/assets/longitud_por_categoria.png" alt="Longitud de explicaciones por categoría"></div><div><p class="lead">Los diagramas de caja muestran dispersión y valores extremos en todas las categorías.</p><ul><li>Revisar manualmente vacíos y textos anómalos.</li><li>Evitar truncamiento agresivo.</li><li>Usar longitud como rasgo auxiliar, no como sustituto del significado.</li></ul></div></div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Relaciones numéricas</div><h2>Las métricas superficiales del texto están correlacionadas entre sí</h2>
+    <div class="split reverse"><div class="figure"><img src="../report/assets/correlaciones_variables_texto.png" alt="Matriz de correlaciones de variables del texto"></div><div><ul><li>Palabras y caracteres describen casi el mismo eje de longitud.</li><li>No conviene tratarlos como evidencias independientes.</li><li>Las correlaciones no capturan equivalencia matemática ni causalidad.</li></ul><div class="callout">Las variables de longitud sirven para diagnóstico de calidad y control de truncamiento.</div></div></div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Dependencia contextual</div><h2>La distribución cambia sustancialmente entre preguntas</h2>
+    <div class="split reverse"><div class="figure"><img src="../report/assets/cruces_por_pregunta.png" alt="Cruces de categorías y concepciones por pregunta"></div><div><p class="lead">Pregunta, opción y lenguaje están entrelazados.</p><ul><li>Un split aleatorio puede filtrar patrones específicos.</li><li>La evaluación más exigente deja preguntas completas fuera.</li><li>Las conclusiones deben reportarse por pregunta.</li></ul><span class="tag">GroupKFold</span><span class="tag">leave-one-question-out</span><span class="tag">MAP@3</span></div></div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Señales léxicas</div><h2>Los marcadores frecuentes orientan, pero no explican por sí solos</h2>
+    <div class="split reverse"><div class="figure"><img src="../report/assets/marcadores_lexicos.png" alt="Marcadores léxicos por categoría"></div><div><ul><li>Expresiones como <i>times</i>, <i>divide</i> o <i>not shaded</i> se asocian con contextos concretos.</li><li>TF-IDF ofrece una línea base interpretable.</li><li>N-gramas capturan frases y negaciones locales.</li><li>Los patrones deben contrastarse con la pregunta y la opción.</li></ul></div></div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Ruta de modelado</div><h2>De una línea base interpretable a modelos matemáticos contextuales</h2>
+    <div class="flow"><div class="node">TF-IDF<br><small>palabras + caracteres</small></div><div class="arrow">→</div><div class="node">Clasificador lineal<br><small>baseline reproducible</small></div><div class="arrow">→</div><div class="node">BERT / DeBERTa<br><small>contexto lingüístico</small></div><div class="arrow">→</div><div class="node">MathBERT<br><small>dominio matemático</small></div></div>
+    <div class="grid g3" style="margin-top:2vh"><article class="card top"><h3>Entrada</h3><p>QuestionId + MC_Answer + StudentExplanation.</p></article><article class="card top gold"><h3>Salida jerárquica</h3><p>Category y, solo si aplica, Misconception.</p></article><article class="card top green"><h3>Validación</h3><p>MAP@3, macro-F1 y análisis por pregunta/etiqueta.</p></article></div>
+    <p class="cite">Salton &amp; Buckley (1988); Devlin et al. (2019); He et al. (2021); Shen et al. (2021).</p>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Hallazgos y decisiones</div><h2>Cinco conclusiones accionables del análisis</h2>
+    <div class="grid g3"><article class="card top"><h3>1 · Jerarquía</h3><p>Category debe preceder a Misconception.</p></article><article class="card top gold"><h3>2 · Contexto</h3><p>La pregunta no es un identificador neutral.</p></article><article class="card top green"><h3>3 · Desbalance</h3><p>Evaluar más allá de accuracy.</p></article><article class="card top red"><h3>4 · Texto</h3><p>Preservar notación, números y negaciones.</p></article><article class="card top"><h3>5 · Prudencia</h3><p>El modelo apoya la revisión docente.</p></article><article class="card top gold"><h3>Siguiente paso</h3><p>Baseline TF-IDF y validación por pregunta.</p></article></div>
+    <div class="callout">La mejor explicación del dataset no es “detectar palabras equivocadas”, sino modelar la relación entre contexto, elección y razonamiento.</div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Repositorio y reproducibilidad</div><h2>Artefactos del proyecto</h2>
+    <div class="split"><div><div class="repo">Proyecto-2_Grupo-1_DS_Sec-10/
+├── data/          dataset local (no versionado)
+├── instructions/  guía del proyecto
+├── notebooks/     análisis exploratorio
+├── report/        informe y presentación
+├── README.md
+└── LICENSE</div><p style="margin-top:1rem"><a href="https://github.com/DanielBarillasM/Proyecto-2_Grupo-1_DS_Sec-10" target="_blank">github.com/DanielBarillasM/Proyecto-2_Grupo-1_DS_Sec-10</a></p></div><div style="text-align:center"><img class="qr" src="../report/assets/repo_qr.png" alt="Código QR del repositorio"><p class="small">Escanee para abrir el repositorio</p><div class="callout" style="text-align:left"><b>Pendiente formal:</b> corregir la ubicación local de los datos y confirmar si el HTML puede sustituir el PowerPoint solicitado.</div></div></div>
+  </section>
+
+  <section class="slide">
+    <div class="eyebrow">Referencias</div><h2>Fuentes principales · APA 7.ª edición</h2>
+    <div class="refs">
+      <p>Devlin, J., Chang, M.-W., Lee, K., &amp; Toutanova, K. (2019). BERT: Pre-training of deep bidirectional transformers for language understanding. <i>NAACL-HLT 2019</i>, 4171–4186. https://doi.org/10.18653/v1/N19-1423</p>
+      <p>He, P., Liu, X., Gao, J., &amp; Chen, W. (2021). DeBERTa: Decoding-enhanced BERT with disentangled attention. <i>ICLR 2021</i>.</p>
+      <p>King, J., Smith, K., Burleigh, L., Crossley, S., Demkin, M., &amp; Reade, W. (2025). <i>MAP—Charting student math misunderstandings</i>. Kaggle.</p>
+      <p>Otero, V., Rodrigues, A., Saporta, J., Musco, C., &amp; Musco, C. (2025). A benchmark for math misconceptions. <i>Discover Education, 4</i>, 277. https://doi.org/10.1007/s44217-025-00742-w</p>
+      <p>Rittle-Johnson, B., Adler, R., Durkin, K., Burleigh, L., King, J., &amp; Crossley, S. (2025). Detecting math misconceptions: An AI benchmark dataset. <i>AIME-Con WIP</i>, 20–24.</p>
+      <p>Salton, G., &amp; Buckley, C. (1988). Term-weighting approaches in automatic text retrieval. <i>Information Processing &amp; Management, 24</i>(5), 513–523.</p>
+      <p>Shen, J. T., Yamashita, M., Prihar, E., Heffernan, N., Wu, X., Graff, B., &amp; Lee, D. (2021). <i>MathBERT</i> [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2106.07340</p>
+      <p>The Learning Agency. (2025, November 12). <i>Case study: Math misconceptions competition</i>.</p>
+    </div>
+    <p class="cite">La bibliografía completa y los enlaces activos se encuentran en el informe PDF.</p>
+  </section>
+
+  <section class="slide cover">
+    <div class="eyebrow">Cierre</div><div class="rule"></div><h1>Comprender el error es el primer paso para enseñar mejor.</h1><p class="subtitle">El análisis exploratorio transforma explicaciones abiertas en hipótesis verificables para un sistema de apoyo pedagógico responsable.</p><div class="meta">¿Preguntas?</div>
+  </section>
+</main>
+<nav class="nav" aria-label="Controles de presentación"><button id="prev" aria-label="Diapositiva anterior">←</button><button id="next" aria-label="Diapositiva siguiente">→</button><div class="progress" aria-hidden="true"><span id="bar"></span></div><span class="counter" id="counter"></span><span class="hint">←/→ navegar · O vista general · F pantalla completa</span></nav>
+<script>
+  const slides=[...document.querySelectorAll('.slide')], bar=document.getElementById('bar'), counter=document.getElementById('counter'); let current=0;
+  function show(n){current=Math.max(0,Math.min(slides.length-1,n));slides.forEach((s,i)=>s.classList.toggle('active',i===current));bar.style.width=((current+1)/slides.length*100)+'%';counter.textContent=`${current+1} / ${slides.length}`;location.hash=`${current+1}`}
+  function overview(){document.body.classList.toggle('overview')}
+  document.getElementById('prev').onclick=()=>show(current-1);document.getElementById('next').onclick=()=>show(current+1);
+  document.addEventListener('keydown',e=>{if(['ArrowRight','PageDown',' '].includes(e.key)){e.preventDefault();show(current+1)}else if(['ArrowLeft','PageUp'].includes(e.key)){e.preventDefault();show(current-1)}else if(e.key==='Home')show(0);else if(e.key==='End')show(slides.length-1);else if(e.key.toLowerCase()==='o')overview();else if(e.key.toLowerCase()==='f')document.documentElement.requestFullscreen?.()});
+  slides.forEach((s,i)=>s.addEventListener('click',()=>{if(document.body.classList.contains('overview')){document.body.classList.remove('overview');show(i)}}));
+  const initial=parseInt(location.hash.slice(1),10);show(Number.isFinite(initial)?initial-1:0);
+</script>
+</body>
+</html>

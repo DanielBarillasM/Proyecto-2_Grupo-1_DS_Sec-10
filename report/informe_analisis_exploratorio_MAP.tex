@@ -1,0 +1,1512 @@
+\documentclass[11pt,oneside,openany]{book}
+
+% =============================================================================
+% Configuración general
+% =============================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[provide=*,spanish]{babel}
+\usepackage{lmodern}
+\usepackage[a4paper,top=2.35cm,bottom=2.45cm,left=2.45cm,right=2.20cm,
+            headheight=15pt,footskip=1.25cm]{geometry}
+\linespread{1.06}
+\setlength{\parskip}{0.55em}
+\setlength{\parindent}{0pt}
+
+% =============================================================================
+% Matemática, tablas, figuras y recursos visuales
+% =============================================================================
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\graphicspath{{assets/}}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{hyperref}
+
+\definecolor{AzulProfundo}{HTML}{102A43}
+\definecolor{AzulMedio}{HTML}{176B87}
+\definecolor{Turquesa}{HTML}{2A9D8F}
+\definecolor{TurquesaOscuro}{HTML}{207A70}
+\definecolor{Arena}{HTML}{F4E9D8}
+\definecolor{ArenaClara}{HTML}{FBF6EE}
+\definecolor{CelesteClaro}{HTML}{EAF4F8}
+\definecolor{VerdeClaro}{HTML}{EAF7F3}
+\definecolor{AmarilloClaro}{HTML}{FFF6DF}
+\definecolor{Naranja}{HTML}{E9A23B}
+\definecolor{GrisTexto}{HTML}{3F4D5A}
+\definecolor{GrisClaro}{HTML}{EEF2F5}
+\definecolor{RojoSuave}{HTML}{C95F5F}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=AzulMedio,
+  citecolor=TurquesaOscuro,
+  urlcolor=AzulMedio,
+  pdftitle={Proyecto 2 - MAP: Charting Student Math Misunderstandings},
+  pdfauthor={Jorge Gabriel Palacios Sales; Pablo Daniel Barillas Moreno; Roberto Emiliano Otoniel Camposeco Torres},
+  pdfsubject={Análisis exploratorio de explicaciones matemáticas estudiantiles mediante NLP}
+}
+
+\makeatletter
+\def\@makechapterhead#1{%
+  \vspace*{18pt}%
+  {\parindent\z@\raggedright\normalfont
+    \ifnum\c@secnumdepth>\m@ne
+      \sffamily\bfseries\color{Turquesa}\fontsize{36}{40}\selectfont
+      \thechapter\par\nobreak\vskip 8pt
+    \fi
+    \sffamily\bfseries\color{AzulProfundo}\Huge #1\par\nobreak
+    \vskip 7pt\color{Turquesa}\hrule height 1.1pt\vskip 28pt}}
+\def\@makeschapterhead#1{%
+  \vspace*{18pt}%
+  {\parindent\z@\raggedright\normalfont
+    \sffamily\bfseries\color{AzulProfundo}\Huge #1\par\nobreak
+    \vskip 7pt\color{Turquesa}\hrule height 1.1pt\vskip 28pt}}
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-3.5ex \@plus -1ex \@minus -.2ex}{2.3ex \@plus .2ex}%
+  {\normalfont\Large\sffamily\bfseries\color{AzulMedio}}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}{1.5ex \@plus .2ex}%
+  {\normalfont\large\sffamily\bfseries\color{TurquesaOscuro}}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}{1.5ex \@plus .2ex}%
+  {\normalfont\normalsize\sffamily\bfseries\color{AzulProfundo}}}
+\makeatother
+
+% =============================================================================
+% Componentes reutilizables
+% =============================================================================
+\newsavebox{\infobox}
+\newenvironment{hallazgo}[1][]{%
+  \begin{lrbox}{\infobox}\begin{minipage}{0.92\textwidth}
+  \color{GrisTexto}\sffamily\textbf{#1}\par\smallskip\rmfamily}
+  {\end{minipage}\end{lrbox}\par\medskip\noindent
+   \colorbox{CelesteClaro}{\usebox{\infobox}}\par\medskip}
+\newenvironment{decision}[1][]{%
+  \begin{lrbox}{\infobox}\begin{minipage}{0.92\textwidth}
+  \color{GrisTexto}\sffamily\textbf{#1}\par\smallskip\rmfamily}
+  {\end{minipage}\end{lrbox}\par\medskip\noindent
+   \colorbox{VerdeClaro}{\usebox{\infobox}}\par\medskip}
+\newenvironment{advertencia}[1][]{%
+  \begin{lrbox}{\infobox}\begin{minipage}{0.92\textwidth}
+  \color{GrisTexto}\sffamily\textbf{#1}\par\smallskip\rmfamily}
+  {\end{minipage}\end{lrbox}\par\medskip\noindent
+   \colorbox{AmarilloClaro}{\usebox{\infobox}}\par\medskip}
+\newenvironment{ficha}[1][]{%
+  \begin{lrbox}{\infobox}\begin{minipage}{0.90\textwidth}
+  \color{AzulProfundo}\sffamily\textbf{#1}\par\smallskip\rmfamily}
+  {\end{minipage}\end{lrbox}\par\medskip\noindent
+   \fcolorbox{Arena}{ArenaClara}{\usebox{\infobox}}\par\medskip}
+
+\newcommand{\metrica}[2]{%
+  \begin{minipage}[t]{0.48\linewidth}
+    {\sffamily\scriptsize\color{GrisTexto}#1}\par
+    {\sffamily\bfseries\color{AzulProfundo}#2}
+  \end{minipage}%
+}
+\newcommand{\figura}[4][0.97\textwidth]{%
+  \begin{figure}[htbp]
+    \centering
+    \includegraphics[width=#1]{#2}
+    \caption{#3}
+    \label{#4}
+  \end{figure}
+}
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\arraybackslash}p{#1}}
+\newcommand{\codigo}[1]{\texttt{#1}}
+
+\begin{document}
+
+% =============================================================================
+% Portada
+% =============================================================================
+\begin{titlepage}
+\pagecolor{AzulProfundo}
+
+\color{white}
+\vspace*{0.5cm}
+{\sffamily\bfseries\Large Universidad del Valle de Guatemala\par}
+\vspace{0.2cm}
+{\sffamily Facultad de Ingeniería\par}
+{\sffamily Departamento de Ciencias de la Computación\par}
+
+\vfill
+
+{\sffamily\bfseries\color{Turquesa}\Large Proyecto 2 -- Análisis Exploratorio\par}
+\vspace{0.55cm}
+{\sffamily\bfseries\fontsize{32}{37}\selectfont
+MAP: Charting Student\par
+Math Misunderstandings\par}
+\vspace{0.55cm}
+{\Large\color{Arena}
+Caracterización de explicaciones matemáticas estudiantiles mediante
+Procesamiento del Lenguaje Natural\par}
+
+\vspace{1.05cm}
+\noindent\fcolorbox{white!40!AzulProfundo}{AzulProfundo}{%
+\begin{minipage}{0.94\textwidth}
+\vspace{3mm}
+\color{white}
+\begin{tabularx}{\textwidth}{@{}>{\sffamily\bfseries}p{3.4cm}Y@{}}
+Curso: & CC3084 -- Data Science\\[1.5mm]
+Docente: & Lynette García Pérez\\[1.5mm]
+Grupo y sección: & Grupo 1, sección 10\\[1.5mm]
+Integrantes: & Jorge Gabriel Palacios Sales\\
+& Pablo Daniel Barillas Moreno\\
+& Roberto Emiliano Otoniel Camposeco Torres\\[1.5mm]
+Tema: & Procesamiento del Lenguaje Natural (NLP)\\
+\end{tabularx}
+\vspace{3mm}
+\end{minipage}}
+
+\vfill
+{\sffamily\large Guatemala, agosto de 2026\par}
+\end{titlepage}
+\nopagecolor
+
+\frontmatter
+
+\chapter*{Ficha del informe}
+\addcontentsline{toc}{chapter}{Ficha del informe}
+
+\begin{hallazgo}[Propósito]
+Este informe presenta el análisis exploratorio del reto 6, \emph{MAP --
+Charting Student Math Misunderstandings}. Su propósito es caracterizar la
+estructura, calidad, desbalance y contenido lingüístico de las explicaciones
+escritas por estudiantes, y traducir la evidencia en decisiones justificadas
+de preprocesamiento, validación y modelado.
+\end{hallazgo}
+
+\begin{table}[H]
+\centering
+\caption{Identificación y alcance del documento.}
+\begin{tabularx}{\textwidth}{@{}p{4.15cm}Y@{}}
+\toprule
+\textbf{Elemento} & \textbf{Descripción}\\
+\midrule
+Curso & CC3084 -- Data Science, sección 10\\
+Período académico & Segundo semestre de 2026\\
+Reto & 6: MAP -- Charting Student Math Misunderstandings\\
+Área & Procesamiento del Lenguaje Natural\\
+Unidad de análisis & Respuesta de un estudiante a una pregunta matemática,
+acompañada de una explicación libre\\
+Base principal & \codigo{train.csv}: 36,696 observaciones y 7 variables\\
+Objetivo de la competencia & Predecir la etiqueta compuesta
+\codigo{Category:Misconception}\\
+Alcance del informe & Exploración, limpieza, interpretación y próximos pasos;
+no incluye entrenamiento de un modelo final\\
+Fuente de evidencia & Contenido, tablas, salidas y siete figuras almacenadas
+en el notebook del proyecto\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{advertencia}[Trazabilidad del análisis]
+Para elaborar este documento no se ejecutaron celdas del notebook. Las cifras
+y figuras proceden de sus salidas ya almacenadas. Cuando una afirmación textual
+del notebook difería de una tabla, una gráfica o una salida numérica guardada,
+se priorizó la evidencia numérica y la discrepancia se documentó como
+limitación de reproducibilidad.
+\end{advertencia}
+
+\chapter*{Resumen ejecutivo}
+\addcontentsline{toc}{chapter}{Resumen ejecutivo}
+
+Se analizaron 36,696 respuestas estudiantiles distribuidas entre 15 preguntas
+matemáticas. Cada registro contiene el enunciado, la opción elegida y una
+explicación breve en lenguaje natural; en entrenamiento también incluye la
+categoría del razonamiento y, cuando aplica, la concepción errónea. El espacio
+de salida contiene seis valores de \codigo{Category}, 35 concepciones erróneas
+y 65 etiquetas compuestas.
+
+La investigación previa muestra que las 36,696 filas locales son la porción
+etiquetada de un benchmark de 52,463 explicaciones. El conjunto completo fue
+construido con 38,095 explicaciones originales y 14,368 paráfrasis sintéticas
+(27\%), calificadas con rúbricas por ítem y controles de acuerdo entre
+evaluadores (Rittle-Johnson et al., 2025). Esta procedencia obliga a interpretar
+la ortografía, las minúsculas y las repeticiones como una mezcla de producción
+estudiantil y aumento controlado.
+
+El conjunto está completo en sus variables obligatorias. Los 26,836 valores
+nulos de \codigo{Misconception} (73.1\%) son ausencias estructurales: aparecen
+exactamente cuando el razonamiento no fue clasificado como concepción errónea.
+Por ello se codifican como \codigo{NA} y no se imputan. No hay filas idénticas
+si se conserva el identificador único; sin embargo, existen 736 duplicados al
+ignorar \codigo{row\_id} y 970 repeticiones adicionales de texto. La ausencia
+de un identificador de estudiante impide demostrar independencia, de modo que
+estas observaciones se conservan, pero se reconoce su posible efecto sobre una
+partición aleatoria.
+
+La variable objetivo presenta una cola larga severa: 32 de las 65 clases
+compuestas tienen menos de 50 observaciones y 24 tienen menos de 10, mientras
+\codigo{True\_Correct:NA} concentra 40.3\% del total. El texto también impone
+retos particulares: la explicación mediana tiene 13 palabras, 62.8\% comienza
+en minúscula, 78.3\% contiene dígitos y 27.2\% usa una barra de fracción. Por
+consiguiente, eliminar números o símbolos matemáticos destruiría información
+central.
+
+El hallazgo metodológico más importante es la dependencia entre etiquetas y
+preguntas. Treinta y dos de las 35 concepciones erróneas aparecen en una sola
+pregunta; además, 58 de los 60 pares \codigo{(QuestionId, MC\_Answer)}
+determinan la veracidad sin necesidad de leer el texto. Esto favorece un modelo
+jerárquico, pero también crea riesgo de memorización y fuga contextual. Se
+recomienda reportar dos esquemas de validación: uno estratificado para preguntas
+conocidas y otro agrupado por pregunta para medir transferencia a preguntas
+nuevas.
+
+\begin{decision}[Conclusión ejecutiva]
+El reto no es una clasificación plana homogénea. La veracidad de la opción es
+casi determinista a partir de la pregunta y la respuesta; la dificultad real
+consiste en interpretar la explicación y distinguir razonamiento correcto,
+concepción errónea o evidencia insuficiente. El diseño de validación es tan
+importante como el algoritmo y debe hacer visible la diferencia entre memorizar
+una pregunta y generalizar el razonamiento matemático.
+\end{decision}
+
+\tableofcontents
+\listoffigures
+\listoftables
+
+\mainmatter
+
+% =============================================================================
+\chapter{Introducción}
+
+\section{Situación problemática}
+
+Una respuesta matemática incorrecta revela que existe un problema, pero no
+explica su causa. Para intervenir pedagógicamente, el docente necesita conocer
+el razonamiento que condujo al resultado. Una \emph{misconception} o concepción
+errónea es un patrón de pensamiento incorrecto y relativamente estable; no es
+equivalente a un simple descuido aritmético ni a la ausencia de explicación.
+
+Dos estudiantes pueden seleccionar la misma opción equivocada por causas
+distintas: uno puede invertir numerador y denominador y otro contar de forma
+incorrecta las partes de una figura. Aunque el resultado observable sea el
+mismo, las intervenciones educativas deberían ser diferentes. También puede
+ocurrir que un estudiante acierte por casualidad con un razonamiento erróneo, o
+que razone correctamente y cometa un error final de cálculo. Una calificación
+basada únicamente en la opción marcada no detecta estas diferencias.
+
+La dificultad práctica es la escala. Leer y diagnosticar manualmente cada
+explicación después de una evaluación demanda tiempo especializado. El reto,
+organizado en torno a datos de la plataforma educativa Eedi, propone automatizar
+una primera caracterización para apoyar retroalimentación oportuna. El sistema
+no sustituye el juicio docente: busca priorizar y organizar evidencia escrita.
+
+\begin{hallazgo}[Relevancia educativa]
+Los 403 casos \codigo{True\_Misconception} son especialmente importantes: la
+opción marcada es correcta, pero la explicación revela una concepción errónea.
+Un examen que solo califique el resultado los consideraría éxitos y perdería la
+oportunidad de intervenir.
+\end{hallazgo}
+
+\section{Problema científico}
+
+\begin{ficha}[Pregunta de investigación]
+¿Es posible predecir automáticamente, a partir de la explicación en lenguaje
+natural escrita por un estudiante, el enunciado y la opción seleccionada, si su
+razonamiento es correcto y, cuando no lo es, qué concepción errónea específica
+lo explica?
+\end{ficha}
+
+Formalmente, se trata de clasificación multiclase sobre texto corto y contenido
+matemático. Para cada observación (i), los predictores son:
+
+\begin{equation}
+X_i = \{Q_i,\; T_i,\; A_i,\; E_i\},
+\end{equation}
+
+donde $Q_i$ es el identificador de la pregunta, $T_i$ su enunciado,
+$A_i$ la opción seleccionada y $E_i$ la explicación libre. La salida es la
+etiqueta compuesta:
+
+\begin{equation}
+Y_i = \text{Category}_i : \text{Misconception}_i.
+\end{equation}
+
+Las dificultades anticipadas son texto corto y ruidoso, errores ortográficos,
+notación matemática informal, desbalance severo, clases con soporte mínimo y
+dependencia entre la pregunta y la etiqueta.
+
+\section{Objetivos}
+
+\subsection{Objetivo general}
+
+Caracterizar mediante análisis exploratorio la estructura, calidad y principales
+dificultades del conjunto de datos MAP, de modo que las decisiones de
+preprocesamiento, validación y diseño del modelo de clasificación queden
+fundamentadas en evidencia empírica.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}
+  \item Cuantificar el desbalance de \codigo{Category},
+        \codigo{Misconception} y la etiqueta compuesta, identificando las clases
+        con menos de 50 y menos de 10 observaciones.
+  \item Evaluar la calidad y el poder discriminante del texto mediante longitud,
+        densidad numérica, diversidad léxica y símbolos matemáticos, además de
+        detectar valores atípicos y ausencias.
+  \item Analizar la relación entre pregunta, opción seleccionada, veracidad,
+        tipo de razonamiento y concepción errónea para identificar dependencias
+        que condicionen la validación.
+  \item Proponer decisiones de limpieza y próximos pasos de modelado que
+        conserven la información matemática y reduzcan el riesgo de fuga.
+\end{enumerate}
+
+\section{Alcance}
+
+El informe cubre investigación conceptual de NLP, descripción de datos,
+limpieza, estadística descriptiva, frecuencias, proporciones, cruces,
+correlaciones, atípicos, interpretación léxica, conclusiones y próximos pasos.
+No entrena ni compara modelos finales. El \codigo{test.csv} local tiene solo
+tres filas de ejemplo; cualquier evaluación futura deberá construirse con una
+partición controlada de entrenamiento.
+
+% =============================================================================
+\chapter{Investigación previa y antecedentes}
+
+\section{Por qué estudiar concepciones erróneas}
+
+Una concepción errónea no es simplemente una respuesta incorrecta. Es una
+forma sistemática de interpretar o aplicar conocimiento matemático que puede
+producir el mismo patrón de error en situaciones relacionadas. Esta diferencia
+es pedagógicamente central: una equivocación de cálculo puede requerir práctica
+o revisión, mientras que una regla conceptual mal generalizada exige hacer
+visible el razonamiento y reconstruir su significado.
+
+La literatura reciente sobre diagnóstico asistido por inteligencia artificial
+coincide en que las explicaciones abiertas contienen información que la opción
+marcada no ofrece. En un benchmark independiente de álgebra de nivel medio,
+Otero, Druga y Lan (2025) mostraron que restringir los candidatos por tema y
+añadir revisión de educadores mejoró notablemente la identificación de
+concepciones erróneas. Este resultado respalda dos decisiones del presente
+proyecto: incorporar el contexto de la pregunta y conservar supervisión humana
+en cualquier uso pedagógico.
+
+Los aciertos con razonamiento defectuoso merecen atención particular. Un
+trabajo reciente presentado en el taller PEAF estudió este fenómeno con
+respuestas de Eedi y advirtió que, aun cuando modelos de razonamiento mejoran la
+detección, los falsos positivos pueden superar ampliamente los casos reales;
+por ello propuso un flujo de detectar, verificar y escalar, en vez de generar
+diagnósticos automáticos definitivos (Imran \& Bulathwela, 2026). Esta evidencia
+se considera emergente porque corresponde a un trabajo de taller, pero coincide
+con la necesidad de interpretar con cautela la clase
+\codigo{True\_Misconception}.
+
+\section{El reto MAP}
+
+La competencia \emph{MAP -- Charting Student Math Misunderstandings} fue
+organizada por Vanderbilt University y The Learning Agency en Kaggle. Su
+objetivo oficial fue construir modelos de NLP capaces de proponer concepciones
+erróneas candidatas a partir de explicaciones abiertas, para facilitar que los
+docentes identifiquen razonamientos incorrectos que son costosos de etiquetar
+manualmente (King et al., 2025). La competencia inició el 10 de julio de 2025 y
+cerró el 15 de octubre de 2025.
+
+El reto no se limita a predecir si la opción es correcta. La salida integra:
+
+\begin{enumerate}
+  \item la veracidad de la opción elegida;
+  \item la calidad de la explicación: correcta, concepción errónea o ninguna;
+  \item el nombre de la concepción errónea cuando existe.
+\end{enumerate}
+
+La meta declarada es que las concepciones aprendidas puedan generalizar entre
+problemas diferentes, no solo que se reproduzca el inventario de etiquetas de
+una pregunta conocida (King et al., 2025). Esta aspiración vuelve especialmente
+relevante el hallazgo exploratorio de que 32 de las 35 concepciones presentes
+en el entrenamiento local aparecen en una sola pregunta.
+
+El estudio retrospectivo de la entidad organizadora reportó más de 1,850
+equipos, cerca de 40,000 envíos y resultados MAP@3 superiores a 0.94 entre las
+soluciones principales. También destacó que la taxonomía fue desarrollada por
+expertos de contenido para diferenciar corrección, errores comunes y
+concepciones específicas (The Learning Agency, 2025). Un desempeño alto en la
+competencia demuestra viabilidad técnica dentro de ese benchmark, pero no
+garantiza por sí solo validez externa en nuevos currículos, idiomas o
+poblaciones.
+
+\section{Procedencia y construcción del benchmark}
+
+Rittle-Johnson et al. (2025) documentaron académicamente la construcción del
+conjunto MAP. El benchmark completo contiene 52,463 explicaciones sobre 15
+preguntas de matemática de nivel medio, principalmente números racionales,
+ecuaciones y funciones. Los ítems provienen de Eedi; cada uno contiene una
+opción correcta y tres distractores diseñados, cuando es posible, para capturar
+errores conocidos. A la selección de opción múltiple le sigue una solicitud de
+explicación abierta.
+
+\begin{table}[htbp]
+\centering
+\caption{Procedencia del benchmark MAP según su artículo metodológico.}
+\label{tab:procedencia-benchmark}
+\begin{tabularx}{\textwidth}{@{}p{4.5cm}Y@{}}
+\toprule
+\textbf{Elemento} & \textbf{Descripción documentada}\\
+\midrule
+Plataforma de origen & Eedi, plataforma de aprendizaje de matemáticas del Reino
+Unido.\\
+Cobertura & 15 preguntas de nivel medio, con énfasis en números racionales,
+ecuaciones y funciones.\\
+Tamaño completo & 52,463 explicaciones; el \codigo{train.csv} local contiene
+36,696, es decir, solo la porción etiquetada disponible para entrenamiento.\\
+Explicaciones originales & 38,095 registros.\\
+Explicaciones aumentadas & 14,368 paráfrasis generadas con Coedit-XL, equivalentes
+al 27\% del benchmark completo.\\
+Anotación & Rúbricas específicas por ítem, desarrolladas por tres especialistas
+en cognición matemática y concepciones erróneas.\\
+Control de calidad & 24\% de explicaciones codificadas por dos evaluadores;
+\(\kappa\) de Cohen entre 0.70 y 0.90.\\
+Privacidad & Explicaciones revisadas para retirar información identificable; no
+se distribuyeron datos demográficos.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La generación sintética buscó aumentar el soporte de concepciones poco
+frecuentes y facilitar la capacitación de evaluadores. Se permitió como máximo
+una paráfrasis por explicación auténtica. Para imitar la escritura estudiantil,
+la mitad de los textos aumentados recibió un error ortográfico aleatorio y la
+mitad fue convertida completamente a minúsculas (Rittle-Johnson et al., 2025).
+
+\begin{advertencia}[Implicación para el análisis de calidad]
+No todo el ruido observado puede atribuirse directamente a estudiantes. Parte
+de las minúsculas, ortografía y repetición léxica fue introducida de manera
+controlada en las explicaciones sintéticas. Como los archivos de competencia no
+incluyen un indicador de procedencia, el análisis local no puede separar textos
+originales de aumentados ni medir su distribución por clase.
+\end{advertencia}
+
+La anotación también impone límites. Cada explicación recibe un solo código,
+aunque un razonamiento podría exhibir más de un error. El artículo reporta que
+27\% del benchmark completo contiene evidencia de una posible concepción
+errónea y que su frecuencia cambia considerablemente entre ítems
+(Rittle-Johnson et al., 2025). Esto coincide con la cola larga y la dependencia
+por pregunta encontradas en el EDA.
+
+\section{Técnicas investigadas para detectar patrones escritos}
+
+La investigación previa sugiere una progresión metodológica en cuatro niveles:
+
+\begin{enumerate}
+  \item \textbf{Representaciones léxicas interpretables.} TF--IDF pondera los
+        términos de acuerdo con su frecuencia local y su rareza en el corpus;
+        constituye una referencia clásica para recuperación y clasificación de
+        texto (Salton \& Buckley, 1988).
+  \item \textbf{Modelos lineales supervisados.} Una regresión logística sobre
+        unigramas y bigramas permite establecer una línea base rápida,
+        reproducible y fácil de inspeccionar. Su desempeño indica cuánto del
+        problema puede resolverse mediante asociaciones léxicas.
+  \item \textbf{Modelos contextuales.} BERT aprende representaciones
+        bidireccionales que pueden adaptarse a clasificación con una capa de
+        salida (Devlin et al., 2019); DeBERTa separa información de contenido y
+        posición mediante atención desacoplada (He et al., 2021).
+  \item \textbf{Adaptación al dominio matemático.} MathBERT fue preentrenado con
+        currículo, libros, sílabos y resúmenes matemáticos. En tareas de
+        educación matemática, incluida calificación de respuestas abiertas,
+        superó a BERT base, lo que evidencia el valor de preservar vocabulario,
+        ecuaciones y símbolos especializados (Shen et al., 2021).
+\end{enumerate}
+
+La comparación no debe reducirse a escoger el modelo de mayor capacidad. El
+benchmark de Otero et al. (2025) encontró que restringir el espacio de
+concepciones por tema y revisar errores con educadores produjo mejoras
+considerables. Por tanto, contexto, taxonomía y evaluación experta pueden ser
+tan importantes como la arquitectura.
+
+\section{Consecuencias para este análisis exploratorio}
+
+La investigación previa conduce a cinco criterios concretos que guían el EDA:
+
+\begin{itemize}
+  \item conservar números, fracciones, signos y expresiones matemáticas;
+  \item analizar pregunta, opción y explicación como campos distintos;
+  \item cuantificar la cola larga y la asociación entre concepción e ítem;
+  \item tratar las faltas ortográficas y minúsculas como mezcla de escritura
+        auténtica y aumento sintético;
+  \item evaluar por separado desempeño en preguntas conocidas y transferencia
+        a preguntas nuevas, manteniendo revisión docente.
+\end{itemize}
+
+% =============================================================================
+\chapter{Marco conceptual de NLP}
+
+\section{Patrones en lenguaje escrito}
+
+El NLP convierte texto en representaciones que un algoritmo puede comparar.
+En este reto, una limpieza agresiva sería contraproducente: expresiones como
+\codigo{3/9}, \codigo{-13}, \codigo{divide}, \codigo{half} o
+\codigo{two negatives} contienen el procedimiento y la posible fuente del
+error. Las técnicas relevantes son:
+
+\begin{description}
+  \item[Normalización controlada.] Homogeneizar mayúsculas, espacios y LaTeX en
+        las opciones sin eliminar números, signos ni barras de fracción.
+  \item[Tokenización y n-gramas.] Separar unidades léxicas y conservar
+        secuencias cortas como \emph{divided by}, \emph{not shaded} o
+        \emph{whole number}, cuyo significado supera al de palabras aisladas.
+  \item[TF--IDF.] Ponderar términos frecuentes en una explicación, pero raros
+        en el corpus, para obtener una matriz dispersa interpretable
+        (Salton \& Buckley, 1988).
+  \item[Clasificación lineal.] Combinar TF--IDF con regresión logística como
+        línea base fuerte, auditable y eficiente para texto corto.
+  \item[Modelos contextuales.] Evaluar posteriormente transformadores como
+        BERT o DeBERTa, capaces de representar el contexto de una palabra
+        (Devlin et al., 2019; He et al., 2021); su complejidad solo se justifica si
+        mejoran una línea base bien validada.
+  \item[Clasificación jerárquica.] Separar veracidad, calidad del razonamiento y
+        concepción específica, aprovechando la estructura pedagógica de la
+        etiqueta en vez de tratar 65 clases como equivalentes.
+\end{description}
+
+\section{Por qué el contexto matemático importa}
+
+Una frase no tiene una interpretación universal. ``Se divide por 3'' puede ser
+un procedimiento correcto en una pregunta y una regla aplicada indebidamente
+en otra. Por ello, el texto debe combinarse con el enunciado y la respuesta.
+Los modelos que solo usen \codigo{StudentExplanation} perderán contexto; los
+que usen solo \codigo{QuestionId} pueden memorizar asociaciones sin comprender
+el razonamiento.
+
+\section{Métrica de la competencia}
+
+El archivo de ejemplo solicita tres etiquetas ordenadas por confianza. Con una
+única etiqueta correcta por observación, la precisión promedio a tres
+posiciones se reduce al recíproco del rango cuando la respuesta aparece en las
+tres primeras posiciones:
+
+\begin{equation}
+\operatorname{AP@3}_i =
+\begin{cases}
+1/r_i, & r_i \leq 3,\\
+0, & r_i > 3,
+\end{cases}
+\qquad
+\operatorname{MAP@3}=\frac{1}{n}\sum_{i=1}^{n}\operatorname{AP@3}_i.
+\end{equation}
+
+Acertar en la primera, segunda o tercera posición aporta (1), (1/2) o
+(1/3), respectivamente. Esta métrica es más útil que la exactitud plana ante
+clases raras, aunque no elimina la necesidad de reportar resultados por clase
+y por pregunta.
+
+% =============================================================================
+\chapter{Descripción de los datos}
+
+\section{Archivos disponibles}
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Archivos de datos identificados en el proyecto.}
+\label{tab:archivos}
+\begin{tabularx}{\textwidth}{@{}p{3.7cm}R{2.5cm}R{2.4cm}Y@{}}
+\toprule
+\textbf{Archivo} & \textbf{N.º obs.} & \textbf{Variables} &
+\textbf{Función}\\
+\midrule
+\codigo{train.csv} & 36,696 & 7 & Exploración y futuro entrenamiento\\
+\codigo{test.csv} & 3 & 5 & Ejemplo local del formato de predicción; no permite evaluación real\\
+\codigo{sample\_}\linebreak\codigo{submission.csv} & 3 & 2 & Plantilla de tres etiquetas ordenadas por fila\\
+Archivo ZIP & -- & -- & Copia comprimida de los tres archivos anteriores\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La unidad de análisis no es un estudiante completo ni una calificación final.
+Es una respuesta a una pregunta específica. El conjunto no incluye un
+identificador de estudiante, curso, centro educativo, edad ni secuencia
+temporal; por tanto, no es posible estudiar progreso individual o dependencia
+entre respuestas del mismo estudiante.
+
+Además, la unidad debe interpretarse como un \emph{registro de explicación} y
+no necesariamente como una producción original independiente. El benchmark
+completo combina explicaciones auténticas y paráfrasis sintéticas; la versión
+de competencia no proporciona una bandera que permita distinguirlas
+(Rittle-Johnson et al., 2025). Esta ausencia condiciona el análisis de
+duplicados, ortografía y estilo.
+
+\section{Diccionario de variables}
+
+\small
+\begin{longtable}{@{}p{3.5cm}p{3.0cm}p{2.8cm}p{4.7cm}@{}}
+\caption{Variables del conjunto de entrenamiento.}
+\label{tab:variables}\\
+\toprule
+\textbf{Variable} & \textbf{Tipo en archivo} & \textbf{Tipo estadístico} &
+\textbf{Descripción y rol}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Variable} & \textbf{Tipo en archivo} & \textbf{Tipo estadístico} &
+\textbf{Descripción y rol}\\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+\codigo{row\_id} & Entero & Identificador & Clave única de la observación; no
+representa magnitud.\\
+\codigo{QuestionId} & Entero & Categórica nominal & Identificador de la
+pregunta; codifica contexto y dificultad.\\
+\codigo{QuestionText} & Texto & Texto contextual & Enunciado matemático; tres
+preguntas incluyen una descripción textual de imagen.\\
+\codigo{MC\_Answer} & Texto & Categórica nominal & Opción seleccionada; 96\%
+contiene notación LaTeX.\\
+\codigo{Student\_}\linebreak\codigo{Explanation} & Texto & Texto libre & Explicación escrita por el
+estudiante; predictor lingüístico principal.\\
+\codigo{Category} & Texto & Categórica objetivo & Cruce de veracidad
+(\codigo{True/False}) y tipo (\codigo{Correct}, \codigo{Misconception} o
+\codigo{Neither}).\\
+\codigo{Misconception} & Texto & Categórica objetivo & Nombre de la concepción
+errónea; solo aplica cuando el tipo es \codigo{Misconception}.\\
+\end{longtable}
+
+Los dos enteros son identificadores, no variables cuantitativas. Por eso no
+tiene sentido calcular su media como si representaran una escala. Las variables
+numéricas útiles se derivan del texto y se presentan en el Capítulo
+\ref{ch:eda}.
+
+\section{Estructura de la etiqueta}
+
+\codigo{Category} tiene la forma \codigo{Veracidad\_Tipo}. La veracidad indica
+si la opción elegida es correcta; el tipo evalúa la explicación.
+
+\begin{table}[htbp]
+\centering
+\caption{Interpretación de los seis valores de \codigo{Category}.}
+\label{tab:interpretacion-category}
+\begin{tabularx}{\textwidth}{@{}p{4.1cm}Y@{}}
+\toprule
+\textbf{Categoría} & \textbf{Interpretación}\\
+\midrule
+\codigo{True\_Correct} & Opción correcta y razonamiento correcto.\\
+\codigo{True\_Misconception} & Opción correcta, pero explicación basada en una
+concepción errónea; posible acierto casual.\\
+\codigo{True\_Neither} & Opción correcta, pero explicación insuficiente o no
+clasificable como correcta ni como concepción errónea.\\
+\codigo{False\_Correct} & Opción incorrecta con procedimiento esencialmente
+válido; posible error aritmético final.\\
+\codigo{False\_Misconception} & Opción incorrecta y explicación asociada a una
+concepción errónea identificable.\\
+\codigo{False\_Neither} & Opción incorrecta y explicación insuficiente, irrelevante
+o no clasificable dentro de una concepción específica.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =============================================================================
+\chapter{Limpieza y preprocesamiento}
+
+\section{Valores faltantes}
+
+La única columna con ausencias es \codigo{Misconception}: 26,836 registros,
+equivalentes a 73.1\% del total. El cruce con el tipo de razonamiento demuestra
+una correspondencia perfecta.
+
+\begin{table}[htbp]
+\centering
+\caption{Disponibilidad de \codigo{Misconception} por tipo de razonamiento.}
+\label{tab:nulos}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Tipo} & \textbf{Nulo} & \textbf{Con valor}\\
+\midrule
+Correct & 15,029 & 0\\
+Misconception & 0 & 9,860\\
+Neither & 11,807 & 0\\
+\midrule
+Total & 26,836 & 9,860\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{decision}[Decisión sobre ausencias]
+Los nulos significan ``no aplica'' y se sustituyen por la etiqueta explícita
+\codigo{NA}, que coincide con el formato de entrega. No se usa media, moda ni
+modelo de imputación: asignar una concepción errónea a casos \codigo{Correct} o
+\codigo{Neither} introduciría ruido en casi tres cuartas partes de la base.
+\end{decision}
+
+\section{Duplicados y textos repetidos}
+
+El diagnóstico guardado informa:
+
+\begin{itemize}
+  \item 0 filas completamente duplicadas cuando se incluye \codigo{row\_id};
+  \item 736 filas duplicadas al excluir \codigo{row\_id};
+  \item 970 repeticiones adicionales de \codigo{StudentExplanation} (2.6\%);
+  \item frases frecuentes como \emph{because it is a whole number} o
+        \emph{because two negatives make a positive}.
+\end{itemize}
+
+Una repetición puede ser legítima: estudiantes distintos pueden escribir la
+misma respuesta breve. Sin embargo, como no existe un identificador de
+estudiante, tampoco puede demostrarse que las 736 coincidencias sean
+independientes. Se conservan para respetar la unidad original, pero una futura
+validación debe evitar que copias idénticas queden a ambos lados de la
+partición.
+
+\section{Calidad y convenciones del texto}
+
+\begin{table}[htbp]
+\centering
+\caption{Indicadores de calidad de \codigo{StudentExplanation}.}
+\label{tab:calidad-texto}
+\begin{tabularx}{0.86\textwidth}{@{}Y R{3.2cm}@{}}
+\toprule
+\textbf{Indicador} & \textbf{Proporción}\\
+\midrule
+Empieza en minúscula & 62.8\%\\
+Contiene dígitos & 78.3\%\\
+Contiene barra ``/'' & 27.2\%\\
+Contiene signo ``='' & 15.9\%\\
+Tiene menos de 3 palabras & 0.1\%\\
+Contiene LaTeX & 0.0\%\\
+\codigo{MC\_Answer} contiene LaTeX & 96.0\%\\
+\codigo{QuestionText} contiene descripción de imagen & 23.6\%\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+El corpus es informal, pero no está vacío ni corrupto. Las faltas ortográficas,
+minúsculas y expresiones improvisadas forman parte de la señal observada; no
+obstante, una fracción de esos rasgos fue inducida durante el aumento sintético
+descrito por Rittle-Johnson et al. (2025). El contenido matemático aparece tanto
+en palabras como en números y símbolos.
+
+\section{Decisiones de transformación}
+
+\begin{table}[htbp]
+\centering
+\caption{Plan de limpieza y justificación.}
+\label{tab:limpieza}
+\begin{tabularx}{\textwidth}{@{}p{4.0cm}p{3.8cm}Y@{}}
+\toprule
+\textbf{Situación} & \textbf{Decisión} & \textbf{Justificación}\\
+\midrule
+Nulos estructurales & Reemplazar por \codigo{NA} & Conserva la semántica y el
+formato objetivo.\\
+Textos y registros repetidos & Conservar y auditar la partición & Pueden ser
+respuestas legítimas, pero no deben causar fuga.\\
+LaTeX en la opción & Convertir fracciones a texto plano & Homogeneiza
+\codigo{\textbackslash frac\{1\}\{3\}} y \codigo{1/3}.\\
+Mayúsculas inconsistentes & Minusculizar la explicación & Reduce variantes sin
+cambiar la operación matemática.\\
+Dígitos y símbolos & Conservar & Son la señal matemática principal.\\
+Ortografía estudiantil & No corregir automáticamente & Una corrección puede
+cambiar términos, números o pistas propias de la concepción errónea.\\
+Descripciones de imágenes & Conservar como texto & La imagen original no está
+disponible; la descripción es el único contexto visual.\\
+Espacios repetidos & Colapsar & Evita tokens vacíos sin pérdida semántica.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+% =============================================================================
+\chapter{Análisis exploratorio}
+\label{ch:eda}
+
+\section{Variables categóricas}
+
+\subsection{Distribución de \codigo{Category}}
+
+\begin{table}[htbp]
+\centering
+\caption{Frecuencia y proporción de las categorías.}
+\label{tab:category}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Categoría} & \textbf{Frecuencia} & \textbf{Proporción}\\
+\midrule
+\codigo{True\_Correct} & 14,802 & 40.34\%\\
+\codigo{False\_Misconception} & 9,457 & 25.77\%\\
+\codigo{False\_Neither} & 6,542 & 17.83\%\\
+\codigo{True\_Neither} & 5,265 & 14.35\%\\
+\codigo{True\_Misconception} & 403 & 1.10\%\\
+\codigo{False\_Correct} & 227 & 0.62\%\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\figura{distribucion_category.png}
+{Distribución de \codigo{Category} y descomposición entre veracidad y tipo de
+razonamiento. Figura extraída de la salida almacenada del notebook.}
+{fig:category}
+
+El 55.78\% de las opciones seleccionadas es verdadero y el 44.22\% falso. Al
+agrupar por calidad de explicación, 40.96\% es \codigo{Correct}, 32.18\%
+\codigo{Neither} y 26.87\% \codigo{Misconception}. La diferencia entre estas
+dimensiones demuestra que acertar la opción no equivale a razonar correctamente.
+
+\subsection{Concepciones erróneas y etiqueta compuesta}
+
+Hay 9,860 observaciones con una concepción errónea, distribuidas entre 35
+clases. Las más frecuentes se presentan en la Tabla
+\ref{tab:misconceptions}.
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Quince concepciones erróneas más frecuentes.}
+\label{tab:misconceptions}
+\begin{tabular}{@{}lrr@{}}
+\toprule
+\textbf{Concepción} & \textbf{Frecuencia} & \textbf{\% entre concepciones}\\
+\midrule
+Incomplete & 1,454 & 14.75\%\\
+Additive & 929 & 9.42\%\\
+Duplication & 704 & 7.14\%\\
+Subtraction & 620 & 6.29\%\\
+Positive & 566 & 5.74\%\\
+Wrong\_term & 558 & 5.66\%\\
+Irrelevant & 497 & 5.04\%\\
+Wrong\_fraction & 418 & 4.24\%\\
+Inversion & 414 & 4.20\%\\
+Mult & 353 & 3.58\%\\
+Denominator-only\_change & 336 & 3.41\%\\
+Whole\_numbers\_larger & 329 & 3.34\%\\
+Adding\_across & 307 & 3.11\%\\
+WNB & 299 & 3.03\%\\
+Tacking & 290 & 2.94\%\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\figura{distribucion_misconceptions.png}
+{Concepciones erróneas más frecuentes y cola larga de las 65 etiquetas
+compuestas. Las líneas horizontales marcan 50 y 10 observaciones.}
+{fig:misconceptions}
+
+La clase mayoritaria \codigo{True\_Correct:NA} tiene 14,802 registros. En el
+extremo contrario, la clase compuesta menos frecuente tiene un solo ejemplo.
+Treinta y dos clases (49.2\%) tienen menos de 50 observaciones y 24 (36.9\%)
+menos de 10. Predecir siempre la clase mayoritaria produciría aproximadamente
+40\% de exactitud, por lo que esa métrica aislada sería engañosa.
+
+\begin{advertencia}[Cola larga]
+Las clases con menos de 10 casos no pueden dividirse de manera estable entre
+entrenamiento y validación. Cualquier resultado agregado debe acompañarse de
+soporte por clase y cobertura; sobremuestrear no crea diversidad lingüística
+nueva y puede aumentar la memorización.
+\end{advertencia}
+
+\section{Variables cuantitativas derivadas del texto}
+
+Debido a que la base no contiene medidas numéricas nativas, se construyeron
+características que describen forma y contenido de la explicación.
+
+\begin{table}[htbp]
+\centering
+\caption{Variables cuantitativas derivadas.}
+\label{tab:derivadas}
+\begin{tabularx}{\textwidth}{@{}p{3.2cm}Y@{}}
+\toprule
+\textbf{Variable} & \textbf{Definición}\\
+\midrule
+\codigo{n\_chars} & Número de caracteres de la explicación normalizada.\\
+\codigo{n\_words} & Número de palabras o tokens separados por espacios.\\
+\codigo{n\_unique\_w} & Número de palabras distintas.\\
+\codigo{avg\_word\_len} & Longitud media de palabra.\\
+\codigo{lex\_diversity} & Cociente entre palabras distintas y palabras totales.\\
+\codigo{n\_digits} & Cantidad de dígitos.\\
+\codigo{digit\_ratio} & Proporción de caracteres que son dígitos.\\
+\codigo{n\_math\_sym} & Conteo de símbolos como $+$, $-$, $*$, $/$, $=$,
+$<$, $>$ y \%.\\
+\codigo{n\_sentences} & Aproximación al número de segmentos u oraciones.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\begin{table}[htbp]
+\centering
+\scriptsize
+\caption{Resumen estadístico de las variables derivadas.}
+\label{tab:descriptivas}
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{@{}lrrrrrrrrrr@{}}
+\toprule
+\textbf{Variable} & \textbf{Media} & \textbf{DE} & \textbf{Mín.} &
+\textbf{Q1} & \textbf{Mediana} & \textbf{Q3} & \textbf{Máx.} &
+\textbf{IQR} & \textbf{CV} & \textbf{Asimetría}\\
+\midrule
+n\_chars & 69.78 & 38.44 & 1.00 & 43.00 & 60.00 & 86.00 & 586.00 & 43.00 & 0.55 & 1.89\\
+n\_words & 15.36 & 8.12 & 1.00 & 10.00 & 13.00 & 19.00 & 177.00 & 9.00 & 0.53 & 1.87\\
+n\_unique\_w & 13.51 & 6.22 & 1.00 & 9.00 & 12.00 & 17.00 & 125.00 & 8.00 & 0.46 & 1.56\\
+avg\_word\_len & 4.56 & 0.67 & 1.00 & 4.12 & 4.54 & 4.96 & 15.67 & 0.84 & 0.15 & 0.72\\
+lex\_diversity & 0.91 & 0.09 & 0.39 & 0.85 & 0.92 & 1.00 & 1.00 & 0.15 & 0.10 & -0.58\\
+n\_digits & 4.72 & 4.61 & 0.00 & 1.00 & 4.00 & 7.00 & 101.00 & 6.00 & 0.98 & 1.63\\
+digit\_ratio & 0.07 & 0.07 & 0.00 & 0.02 & 0.06 & 0.11 & 0.78 & 0.09 & 0.96 & 1.34\\
+n\_math\_sym & 1.01 & 1.66 & 0.00 & 0.00 & 0.00 & 2.00 & 50.00 & 2.00 & 1.64 & 2.92\\
+n\_sentences & 1.59 & 1.39 & 1.00 & 1.00 & 1.00 & 2.00 & 212.00 & 1.00 & 0.88 & 95.21\\
+\bottomrule
+\end{tabular}}
+\end{table}
+
+\figura{distribuciones_variables_texto.png}
+{Histogramas de seis variables cuantitativas derivadas. Las explicaciones son
+cortas y las medidas de longitud presentan cola derecha.}
+{fig:distribuciones-texto}
+
+La mediana es de 13 palabras y 60 caracteres, frente a máximos de 177 palabras
+y 586 caracteres. La diferencia entre media y mediana, junto con asimetrías de
+1.89 y 1.87, confirma cola derecha. La mediana de símbolos matemáticos es cero,
+aunque una minoría concentra muchos. El máximo de 212 en
+\codigo{n\_sentences} sugiere que esta regla de conteo puede reaccionar a
+puntuación o secuencias atípicas y debe revisarse antes de modelar.
+
+\section{Longitud y tipo de razonamiento}
+
+\begin{table}[htbp]
+\centering
+\caption{Longitud de explicación por categoría.}
+\label{tab:longitud-category}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Categoría} & \textbf{Media} & \textbf{Mediana} & \textbf{DE}\\
+\midrule
+False\_Correct & 18.55 & 17 & 8.23\\
+True\_Correct & 17.62 & 16 & 9.03\\
+True\_Misconception & 16.40 & 15 & 8.90\\
+False\_Misconception & 14.80 & 13 & 6.86\\
+True\_Neither & 13.04 & 11 & 7.38\\
+False\_Neither & 12.74 & 11 & 6.53\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\figura{longitud_por_categoria.png}
+{Diagramas de caja y violín para la longitud de la explicación. Las medianas
+por tipo son 16 palabras para \codigo{Correct}, 13 para
+\codigo{Misconception} y 11 para \codigo{Neither}.}
+{fig:longitud-category}
+
+Los razonamientos correctos tienden a ser más extensos, posiblemente porque
+describen un procedimiento. Las explicaciones \codigo{Neither} son más cortas
+y con frecuencia no aportan evidencia evaluable. No obstante, las
+distribuciones se solapan ampliamente: la longitud es una característica
+auxiliar, no una regla de clasificación.
+
+\section{Valores atípicos}
+
+El criterio de rango intercuartílico $1.5\times IQR$ identificó los siguientes
+extremos:
+
+\begin{table}[htbp]
+\centering
+\small
+\caption{Atípicos según el criterio IQR.}
+\label{tab:outliers}
+\begin{tabular}{@{}lrrrr@{}}
+\toprule
+\textbf{Variable} & \textbf{Límite inferior} & \textbf{Límite superior} &
+\textbf{Atípicos} & \textbf{Proporción}\\
+\midrule
+n\_chars & -21.50 & 150.50 & 1,556 & 4.24\%\\
+n\_words & -3.50 & 32.50 & 1,499 & 4.08\%\\
+n\_unique\_w & -3.00 & 29.00 & 815 & 2.22\%\\
+avg\_word\_len & 2.86 & 6.21 & 596 & 1.62\%\\
+lex\_diversity & 0.62 & 1.23 & 12 & 0.03\%\\
+n\_digits & -8.00 & 16.00 & 742 & 2.02\%\\
+digit\_ratio & -0.12 & 0.25 & 831 & 2.26\%\\
+n\_math\_sym & -3.00 & 5.00 & 882 & 2.40\%\\
+n\_sentences & -0.50 & 3.50 & 987 & 2.69\%\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Una explicación larga puede ser un procedimiento detallado y una explicación
+muy corta puede indicar respuesta mínima o ausencia de razonamiento. Hay 30
+observaciones con dos palabras o menos (0.08\%). También existe al menos una
+explicación de 177 palabras con contenido que parece una secuencia extensa de
+símbolos y asociaciones, por lo que no todos los extremos deben describirse
+automáticamente como alta calidad. La inspección contextual es necesaria.
+
+\begin{decision}[Tratamiento de atípicos]
+No se eliminan solo por superar el umbral IQR. En texto humano, la longitud
+extrema puede ser señal predictiva. Para modelar conviene transformar
+\codigo{n\_words} con \(\log(1+x)\), limitar la influencia numérica si fuera
+necesario y auditar manualmente los casos más extremos.
+\end{decision}
+
+\section{Correlaciones}
+
+Se utiliza Spearman porque las variables son asimétricas y las relaciones
+pueden ser monótonas sin ser lineales.
+
+\figura{correlaciones_variables_texto.png}
+{Matriz de correlaciones de Spearman y relación entre palabras totales y
+palabras únicas.}
+{fig:correlaciones}
+
+Los pares más correlacionados son \codigo{n\_words} con
+\codigo{n\_unique\_w} (\(\rho=0.981\)), \codigo{n\_chars} con
+\codigo{n\_words} (\(\rho=0.951\)) y \codigo{n\_chars} con
+\codigo{n\_unique\_w} (\(\rho=0.945\)). \codigo{n\_digits} y
+\codigo{digit\_ratio} alcanzan \(\rho=0.894\). La diversidad léxica tiene
+correlación negativa moderada con el número de palabras
+(\(\rho\approx-0.59\)), en parte porque repetir alguna palabra se vuelve más
+probable conforme crece el texto.
+
+\begin{hallazgo}[Redundancia]
+Incluir caracteres, palabras y palabras únicas simultáneamente aportaría
+información muy similar. Una alternativa parsimoniosa es conservar
+\codigo{n\_words}, una medida normalizada como \codigo{digit\_ratio} y
+banderas matemáticas específicas.
+\end{hallazgo}
+
+\section{Cruces entre pregunta, respuesta y etiqueta}
+
+\subsection{Dificultad heterogénea}
+
+Las 15 preguntas contienen entre 673 y 4,857 observaciones. La tasa de acierto
+varía entre 35.7\% y 79.6\%, con media no ponderada de 56.7\%. Por ello,
+\codigo{QuestionId} contiene información contextual y de dificultad; no debe
+interpretarse como una cantidad continua.
+
+\figura{cruces_por_pregunta.png}
+{Composición de las categorías y tasa de acierto para cada pregunta. La línea
+vertical discontinua marca 50\% de respuestas correctas.}
+{fig:cruces-pregunta}
+
+La variabilidad se observa tanto en el acierto como en la proporción de
+\codigo{Neither} y \codigo{Misconception}. Una pregunta difícil no solo genera
+más respuestas falsas; puede inducir patrones de error distintos.
+
+\subsection{Concepciones ligadas a la pregunta}
+
+De las 35 concepciones erróneas, 32 aparecen en una sola pregunta, dos en dos
+preguntas y una en tres preguntas. Solo \codigo{Incomplete},
+\codigo{Irrelevant} y \codigo{WNB} se describen como transversales. El 91\% de
+las concepciones es, por tanto, exclusivo de un contexto local.
+
+Esto crea dos escenarios de validación:
+
+\begin{enumerate}
+  \item Una partición aleatoria conserva las mismas preguntas a ambos lados y
+        estima desempeño en preguntas conocidas, pero puede premiar la
+        memorización pregunta--etiqueta.
+  \item Una partición agrupada por \codigo{QuestionId} evalúa preguntas nuevas,
+        pero deja fuera del entrenamiento casi todas las concepciones que
+        aparecen en validación; muchas resultan imposibles de predecir por
+        construcción.
+\end{enumerate}
+
+Con solo 15 preguntas, ninguno de los dos esquemas por sí solo describe toda la
+capacidad del sistema.
+
+\subsection{Veracidad casi determinista}
+
+Existen 60 combinaciones de pregunta y opción. En 58, la veracidad es única.
+Las dos excepciones pertenecen a la pregunta 31778:
+
+\begin{table}[htbp]
+\centering
+\caption{Pares ambiguos de pregunta y respuesta.}
+\label{tab:ambiguos}
+\begin{tabular}{@{}lrrr@{}}
+\toprule
+\textbf{Pregunta} & \textbf{Opción} & \textbf{True} & \textbf{False}\\
+\midrule
+31778 & 6 & 1,749 & 6\\
+31778 & 9 & 12 & 138\\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Las minorías pueden representar ruido de etiquetado o una ambigüedad de
+anotación. En cualquier caso, la veracidad se resuelve casi por completo con
+una tabla de consulta; el NLP debe concentrarse en la calidad y naturaleza del
+razonamiento.
+
+\section{Contenido léxico}
+
+Una representación TF--IDF con unigramas y bigramas, vocabulario máximo de
+3,000 términos y frecuencia mínima de cinco produce una matriz de
+36,696 por 3,000 con densidad de 0.332\%. La dispersión es esperable en textos
+de mediana 13 palabras.
+
+Los términos almacenados como característicos incluyen \emph{divided},
+\emph{times} y expresiones numéricas para \emph{Correct}; \emph{not shaded},
+\emph{positive} y \emph{add} para \codigo{Misconception}; y \emph{worked out},
+\emph{guess}, \emph{sure}, \emph{don't know} o \emph{explain} para
+\codigo{Neither}.
+
+\figura[0.91\textwidth]{marcadores_lexicos.png}
+{Composición del tipo de razonamiento condicionada a palabras seleccionadas.
+La línea discontinua representa la tasa base de razonamientos correctos.}
+{fig:marcadores-lexicos}
+
+\emph{Divide}, \emph{multiply}, \emph{fraction}, \emph{times} y \emph{equal}
+se asocian con una proporción de razonamiento correcto superior a la base;
+\emph{guess} se concentra claramente en \codigo{Neither}. Sin embargo, algunas
+palabras también identifican la pregunta concreta. El poder aparente del
+vocabulario debe comprobarse con una validación que separe contexto de
+generalización.
+
+% =============================================================================
+\chapter{Implicaciones para validación y modelado}
+
+\section{Amenazas de fuga de información}
+
+La repetición de preguntas, opciones y algunas explicaciones puede inflar una
+partición aleatoria. Una predicción correcta no demuestra comprensión si el
+modelo aprendió que cierta opción de cierta pregunta suele acompañarse de una
+etiqueta específica. Deben distinguirse tres fuentes de señal:
+
+\begin{enumerate}
+  \item \textbf{Regla del ítem:} \codigo{QuestionId + MC\_Answer} determina la
+        veracidad en 96.7\% de los pares distintos.
+  \item \textbf{Inventario local:} la pregunta restringe las concepciones
+        plausibles.
+  \item \textbf{Lenguaje del razonamiento:} palabras, operaciones y expresiones
+        distinguen cómo llegó el estudiante a la respuesta.
+\end{enumerate}
+
+Un sistema útil puede explotar las tres, pero su evaluación debe indicar qué
+tipo de generalización mide.
+
+\section{Propuesta de validación doble}
+
+\begin{table}[htbp]
+\centering
+\caption{Esquemas complementarios de validación.}
+\label{tab:validacion}
+\begin{tabularx}{\textwidth}{@{}p{3.4cm}p{3.6cm}Y@{}}
+\toprule
+\textbf{Esquema} & \textbf{Qué estima} & \textbf{Limitación}\\
+\midrule
+\codigo{StratifiedKFold} sobre etiqueta compuesta & Desempeño en preguntas y
+clases ya conocidas & Puede beneficiarse de memorizar pregunta, opción o texto
+repetido.\\
+\codigo{GroupKFold} por \codigo{QuestionId} & Transferencia a preguntas nuevas
+& El 91\% de concepciones del pliegue puede no existir en entrenamiento.\\
+Agrupación adicional de duplicados & Robustez ante textos idénticos & Reduce
+ligeramente el tamaño útil y requiere definir una clave de grupo.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+La distancia entre los dos primeros resultados es un hallazgo, no un error:
+cuantifica cuánto depende el sistema de preguntas conocidas.
+
+\section{Arquitectura jerárquica propuesta}
+
+\begin{enumerate}
+  \item \textbf{Etapa 1: veracidad.} Usar el par
+        \codigo{(QuestionId, MC\_Answer)} y tratar explícitamente los dos pares
+        ambiguos.
+  \item \textbf{Etapa 2: tipo.} Clasificar la explicación como
+        \codigo{Correct}, \codigo{Misconception} o \codigo{Neither}, combinando
+        texto, pregunta y opción.
+  \item \textbf{Etapa 3: concepción.} Si el tipo es
+        \codigo{Misconception}, ordenar las concepciones plausibles. Para
+        preguntas conocidas puede restringirse el inventario; para preguntas
+        nuevas debe mantenerse una ruta abierta o taxonomía más general.
+  \item \textbf{Composición.} Convertir las probabilidades en tres etiquetas
+        \codigo{Category:Misconception} ordenadas para MAP@3.
+\end{enumerate}
+
+\section{Línea base e ingeniería de características}
+
+Antes de un transformador, se recomienda establecer TF--IDF de unigramas y
+bigramas con regresión logística. La línea base debe integrar texto de la
+pregunta, opción normalizada y explicación, distinguiendo cada campo con
+prefijos. Como variables auxiliares pueden incluirse:
+
+\begin{itemize}
+  \item \(\log(1+\codigo{n\_words})\);
+  \item \codigo{digit\_ratio};
+  \item presencia de fracción y operadores;
+  \item dificultad estimada de la pregunta, calculada solo con el pliegue de
+        entrenamiento;
+  \item longitud relativa frente a otras explicaciones de la misma pregunta.
+\end{itemize}
+
+No conviene incluir simultáneamente todas las medidas de longitud por su alta
+correlación. Para la cola larga pueden evaluarse pesos de clase, agrupaciones
+pedagógicamente justificadas o recuperación de candidatos; un simple
+sobremuestreo duplica ejemplos, pero no añade variación lingüística.
+
+% =============================================================================
+\chapter{Hallazgos, conclusiones y recomendaciones}
+
+\section{Síntesis de hallazgos}
+
+\begin{longtable}{@{}C{0.8cm}p{4.4cm}p{4.1cm}p{4.2cm}@{}}
+\caption{Hallazgos principales y consecuencias.}
+\label{tab:hallazgos}\\
+\toprule
+\textbf{N.º} & \textbf{Hallazgo} & \textbf{Evidencia} & \textbf{Consecuencia}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{N.º} & \textbf{Hallazgo} & \textbf{Evidencia} & \textbf{Consecuencia}\\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+1 & Los nulos son estructurales & Correspondencia perfecta con tipo
+\codigo{Misconception} & Codificar \codigo{NA}; no imputar.\\
+2 & Hay repeticiones que requieren cautela & 736 duplicados sin
+\codigo{row\_id}; 970 textos repetidos & Conservar, pero agrupar copias en la
+validación.\\
+3 & El texto es informal y matemático & 62.8\% inicia en minúscula; 78.3\% tiene
+dígitos & No eliminar números ni símbolos.\\
+4 & \codigo{Category} cruza dos dimensiones & Veracidad por tipo de razonamiento
+& Favorece clasificación jerárquica.\\
+5 & Existe desbalance extremo & 32/65 clases con menos de 50 casos; 24 con
+menos de 10 & Usar MAP@3, soporte por clase y estrategias de cola larga.\\
+6 & La longitud discrimina débilmente & Medianas 16, 13 y 11 palabras & Usarla
+como variable auxiliar, no como regla.\\
+7 & Los atípicos pueden ser informativos & 4.08\% de atípicos en palabras por
+IQR & Auditar y transformar; no eliminar automáticamente.\\
+8 & Las longitudes son redundantes & Correlaciones de Spearman superiores a
+0.94 & Elegir representación parsimoniosa.\\
+9 & La dificultad cambia por pregunta & Acierto entre 35.7\% y 79.6\% & Tratar
+\codigo{QuestionId} como contexto categórico.\\
+10 & Las concepciones están ligadas al ítem & 32/35 aparecen en una pregunta &
+La validación debe separar preguntas conocidas y nuevas.\\
+11 & La veracidad es casi determinista & 58/60 pares pregunta--opción sin
+ambigüedad & Separar veracidad del análisis del razonamiento.\\
+12 & El vocabulario contiene señal & TF--IDF de 3,000 términos y asociaciones
+interpretables & Línea base clásica viable antes de transformadores.\\
+\end{longtable}
+
+\section{Conclusiones}
+
+\begin{enumerate}
+  \item El conjunto tiene una estructura clara y no presenta ausencias reales
+        en las variables obligatorias. La principal tarea de limpieza es
+        interpretar correctamente los nulos, normalizar convenciones y
+        conservar la notación matemática.
+  \item La procedencia es mixta: el benchmark completo incluye 27\% de
+        explicaciones aumentadas y los archivos no permiten distinguirlas. Por
+        ello, la calidad textual no puede atribuirse exclusivamente a estudiantes.
+  \item La etiqueta no representa un único fenómeno. Separa la corrección de la
+        opción y la calidad del razonamiento, lo que permite detectar aciertos
+        casuales y errores finales de cálculo.
+  \item El desbalance es suficientemente severo para invalidar una lectura
+        basada solo en exactitud. La cola larga debe analizarse con soporte,
+        métricas de ranking y resultados desagregados.
+  \item La explicación contiene señal útil: longitud, símbolos y vocabulario
+        cambian entre tipos de razonamiento. Sin embargo, ninguna característica
+        superficial basta por sí sola y los grupos se solapan.
+  \item La amenaza principal a la validez es la dependencia entre pregunta y
+        concepción. Un buen resultado aleatorio puede reflejar memorización; un
+        resultado por pregunta puede penalizar clases nunca observadas.
+  \item La veracidad puede resolverse casi por completo sin NLP, mientras que
+        interpretar el razonamiento y asignar la concepción específica concentra
+        la dificultad científica.
+  \item Una línea base TF--IDF más regresión logística, evaluada con dos esquemas
+        de validación, ofrece el punto de comparación necesario antes de modelos
+        contextuales más costosos.
+\end{enumerate}
+
+\section{Recomendaciones y próximos pasos}
+
+\begin{enumerate}
+  \item Corregir la ruta de datos del notebook y ejecutar posteriormente una
+        prueba de reproducibilidad en un ambiente limpio, registrando versiones
+        de dependencias y semilla aleatoria.
+  \item Revisar los 736 registros idénticos sin identificador y construir grupos
+        que impidan su separación entre entrenamiento y validación.
+  \item Reportar \codigo{StratifiedKFold} y \codigo{GroupKFold} por pregunta,
+        además de MAP@3 global, soporte por clase y métricas por pregunta.
+  \item Construir el modelo jerárquico en etapas y comparar contra un
+        clasificador plano de 65 clases.
+  \item Establecer TF--IDF con regresión logística antes de evaluar DeBERTa o un
+        modelo especializado en lenguaje matemático.
+  \item Analizar manualmente errores por categoría, especialmente
+        \codigo{True\_}\allowbreak\codigo{Misconception},
+        \codigo{False\_}\allowbreak\codigo{Correct} y clases con menos
+        de 10 ejemplos.
+  \item Mantener supervisión docente: la predicción debe orientar revisión y
+        retroalimentación, no convertirse en un diagnóstico pedagógico
+        incuestionable.
+\end{enumerate}
+
+\section{Limitaciones}
+
+\begin{itemize}
+  \item Solo hay 15 preguntas, por lo que la variedad de conceptos y contextos
+        es limitada.
+  \item El archivo de prueba local contiene tres filas y no permite evaluar
+        generalización externa.
+  \item No existe identificador de estudiante; no se puede medir dependencia,
+        progreso ni repetición individual.
+  \item No existe una variable que identifique las paráfrasis sintéticas; no es
+        posible comparar su distribución, dificultad o efecto por clase.
+  \item Tres preguntas dependen de una descripción textual de imagen, no de la
+        imagen original.
+  \item Las etiquetas raras tienen soporte insuficiente para estimaciones
+        estables.
+  \item Los términos TF--IDF pueden reflejar el tema de la pregunta además del
+        tipo de razonamiento.
+  \item El análisis de este informe usa salidas almacenadas y no sustituye una
+        futura auditoría de ejecución completa.
+\end{itemize}
+
+\begin{decision}[Cierre]
+La evidencia cumple el propósito exploratorio: describe variables y
+observaciones, justifica la limpieza, estudia categorías y medidas derivadas,
+analiza correlaciones y atípicos, cruza los factores esenciales y convierte los
+hallazgos en un plan verificable. El siguiente avance no debe comenzar por el
+modelo más complejo, sino por una validación honesta y una línea base
+interpretable.
+\end{decision}
+
+% =============================================================================
+\appendix
+
+\chapter{Matriz de cumplimiento de la rúbrica}
+
+\begin{longtable}{@{}p{4.0cm}p{9.8cm}@{}}
+\caption{Correspondencia entre los criterios de evaluación y el informe.}
+\label{tab:cumplimiento}\\
+\toprule
+\textbf{Criterio} & \textbf{Evidencia en el documento}\\
+\midrule
+\endfirsthead
+\toprule
+\textbf{Criterio} & \textbf{Evidencia en el documento}\\
+\midrule
+\endhead
+\bottomrule
+\endlastfoot
+Situación problemática & Capítulo 1: contexto educativo, relevancia,
+diferencia entre resultado y razonamiento, y valor de detectar aciertos
+casuales.\\
+Problema científico & Pregunta específica y formulación formal de predictores
+y etiqueta en el Capítulo 1.\\
+Objetivos & Un objetivo general y cuatro objetivos específicos medibles y
+alcanzables.\\
+Investigación previa & Capítulos 2 y 3: competencia, procedencia del benchmark,
+anotación, aumento sintético y técnicas de NLP, con citas y referencias APA 7.\\
+Descripción de los datos & Capítulo 4: archivos, unidad de análisis, 36,696
+observaciones, siete variables, diccionario e interpretación de etiquetas.\\
+Limpieza y preprocesamiento & Capítulo 5: ausencias estructurales, duplicados,
+calidad del texto y tabla de decisiones justificadas.\\
+Estadística descriptiva & Tablas \ref{tab:category},
+\ref{tab:misconceptions}, \ref{tab:descriptivas} y
+\ref{tab:longitud-category}.\\
+Gráficos exploratorios & Figuras \ref{fig:category}--\ref{fig:marcadores-lexicos}:
+barras, mapa de calor, histogramas, cajas, violines, dispersión y correlación.\\
+Correlaciones & Sección 6.5 y Figura \ref{fig:correlaciones}, con elección
+justificada de Spearman.\\
+Outliers & Sección 6.4 y Tabla \ref{tab:outliers}; explicación contextual y
+decisión de conservación.\\
+Variables categóricas & Frecuencias, proporciones, desbalance y cruces por
+pregunta en el Capítulo 6.\\
+Hallazgos y conclusiones & Capítulo 8: síntesis de doce hallazgos, conclusiones
+actualizadas y próximos pasos.\\
+Implicaciones & Capítulo 7: fuga, validación doble, arquitectura jerárquica e
+ingeniería de características.\\
+Informe sin código & El cuerpo explica procedimientos y resultados sin incluir
+celdas de programación.\\
+\end{longtable}
+
+\chapter{Notas de consistencia y reproducibilidad}
+
+Al convertir el notebook en informe se comparó la narrativa con las salidas
+almacenadas. Se adoptaron los siguientes valores verificables:
+
+\begin{itemize}
+  \item asimetría de \codigo{n\_chars}=1.89 y
+        \codigo{n\_words}=1.87, no valores aproximados superiores a 2;
+  \item correlación de Spearman entre \codigo{lex\_diversity} y
+        \codigo{n\_words} cercana a -0.59, no -0.85;
+  \item densidad TF--IDF de 0.332\%, según la salida de la matriz;
+  \item tasa de acierto por pregunta entre 35.7\% y 79.6\%, no un rango de
+        20\% a 85\%;
+  \item existencia de 736 duplicados al ignorar \codigo{row\_id}, aunque no
+        existan filas completas idénticas.
+\end{itemize}
+
+Estas correcciones no alteran las conclusiones centrales, pero mejoran la
+trazabilidad. Para una entrega definitiva se recomienda ejecutar el notebook de
+principio a fin después de corregir la ruta de datos y comprobar que texto,
+tablas y figuras se actualicen de forma automática.
+
+\backmatter
+
+\chapter*{Referencias}
+\addcontentsline{toc}{chapter}{Referencias}
+
+\begin{list}{}{%
+  \setlength{\leftmargin}{1.27cm}
+  \setlength{\itemindent}{-1.27cm}
+  \setlength{\itemsep}{0.85em}
+  \setlength{\parsep}{0pt}}
+
+\item Devlin, J., Chang, M.-W., Lee, K., \& Toutanova, K. (2019). BERT:
+Pre-training of deep bidirectional transformers for language understanding. En
+\emph{Proceedings of the 2019 Conference of the North American Chapter of the
+Association for Computational Linguistics: Human Language Technologies}
+(pp. 4171--4186). Association for Computational Linguistics.
+\url{https://doi.org/10.18653/v1/N19-1423}
+
+\item García Pérez, L. (2026). \emph{Guía del Proyecto 2: Análisis
+Exploratorio} [Guía de proyecto]. Universidad del Valle de Guatemala.
+
+\item Grupo 1, Sección 10. (2026). \emph{Proyecto 2: MAP -- Charting Student
+Math Misunderstandings} [Repositorio de GitHub]. GitHub.
+\url{https://github.com/DanielBarillasM/Proyecto-2_Grupo-1_DS_Sec-10}
+
+\item He, P., Liu, X., Gao, J., \& Chen, W. (2021). DeBERTa:
+Decoding-enhanced BERT with disentangled attention. En \emph{International
+Conference on Learning Representations}.
+\url{https://openreview.net/forum?id=XPZIaotutsD}
+
+\item Imran, M., \& Bulathwela, S. (2026). \emph{The correct answer trap:
+Pedagogically-grounded detection and feedback for hidden misconceptions}
+[Trabajo de taller]. arXiv. \url{https://arxiv.org/abs/2606.23205}
+
+\item King, J., Smith, K., Burleigh, L., Crossley, S., Demkin, M., \& Reade,
+W. (2025). \emph{MAP -- Charting Student Math Misunderstandings} [Competencia
+de ciencia de datos]. Kaggle.
+\url{https://www.kaggle.com/competitions/map-charting-student-math-misunderstandings}
+
+\item Otero, N., Druga, S., \& Lan, A. (2025). A benchmark for math
+misconceptions: Bridging gaps in middle school algebra with AI-supported
+instruction. \emph{Discover Education, 4}, artículo 277.
+\url{https://doi.org/10.1007/s44217-025-00742-w}
+
+\item Rittle-Johnson, B., Adler, R., Durkin, K., Burleigh, L., King, J., \&
+Crossley, S. (2025). Detecting math misconceptions: An AI benchmark dataset.
+En \emph{Proceedings of the Artificial Intelligence in Measurement and
+Education Conference (AIME-Con): Works in Progress} (pp. 20--24). National
+Council on Measurement in Education.
+\url{https://aclanthology.org/2025.aimecon-wip.3/}
+
+\item Salton, G., \& Buckley, C. (1988). Term-weighting approaches in automatic
+text retrieval. \emph{Information Processing \& Management, 24}(5), 513--523.
+\url{https://doi.org/10.1016/0306-4573(88)90021-0}
+
+\item Shen, J. T., Yamashita, M., Prihar, E., Heffernan, N., Wu, X., Graff, B.,
+\& Lee, D. (2021). \emph{MathBERT: A pre-trained language model for general NLP
+tasks in mathematics education} [Preprint]. arXiv.
+\url{https://doi.org/10.48550/arXiv.2106.07340}
+
+\item The Learning Agency. (2025, 12 de noviembre). \emph{Case study: Math
+misconceptions competition}.
+\href{https://the-learning-agency.com/the-cutting-ed/article/case-study-math-misconceptions-competition/}{the-learning-agency.com/the-cutting-ed/}
+
+\end{list}
+
+\vfill
+\begin{center}
+\colorbox{AzulProfundo}{%
+  \begin{minipage}{0.72\textwidth}
+  \centering\vspace{2.5mm}\color{white}\sffamily
+  \textbf{Fin del informe}\vspace{2.5mm}
+  \end{minipage}}
+\end{center}
+
+\end{document}

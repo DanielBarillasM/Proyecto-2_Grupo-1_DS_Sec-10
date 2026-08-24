@@ -1,0 +1,9 @@
+.edge-preview-profile/
+*.aux
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.out
+*.toc
