@@ -1,0 +1,1330 @@
+\documentclass[11pt,oneside,openany]{book}
+
+% =============================================================================
+% Configuración general
+% =============================================================================
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage[provide=*,spanish]{babel}
+\usepackage{lmodern}
+\usepackage[a4paper,top=2.30cm,bottom=2.45cm,left=2.45cm,right=2.20cm,
+            headheight=15pt,footskip=1.25cm]{geometry}
+\linespread{1.06}
+\setlength{\parskip}{0.55em}
+\setlength{\parindent}{0pt}
+\setlength{\emergencystretch}{2em}
+
+% =============================================================================
+% Matemática, tablas, figuras y recursos visuales
+% =============================================================================
+\usepackage{amsmath,amssymb}
+\usepackage{graphicx}
+\graphicspath{{assets/}}
+\usepackage{xcolor}
+\usepackage{booktabs}
+\usepackage{array}
+\usepackage{tabularx}
+\usepackage{longtable}
+\usepackage{float}
+\usepackage{hyperref}
+
+\definecolor{AzulProfundo}{HTML}{102A43}
+\definecolor{AzulMedio}{HTML}{176B87}
+\definecolor{Turquesa}{HTML}{2A9D8F}
+\definecolor{TurquesaOscuro}{HTML}{207A70}
+\definecolor{Arena}{HTML}{F4E9D8}
+\definecolor{ArenaClara}{HTML}{FBF6EE}
+\definecolor{CelesteClaro}{HTML}{EAF4F8}
+\definecolor{VerdeClaro}{HTML}{EAF7F3}
+\definecolor{AmarilloClaro}{HTML}{FFF6DF}
+\definecolor{GrisTexto}{HTML}{3F4D5A}
+\definecolor{GrisClaro}{HTML}{EEF2F5}
+\definecolor{RojoSuave}{HTML}{C95F5F}
+
+\hypersetup{
+  colorlinks=true,
+  linkcolor=AzulMedio,
+  citecolor=TurquesaOscuro,
+  urlcolor=AzulMedio,
+  pdftitle={Revisión bibliográfica y selección de algoritmos para MAP},
+  pdfauthor={Jorge Gabriel Palacios Sales; Pablo Daniel Barillas Moreno; Roberto Emiliano Otoniel Camposeco Torres; Abby Sofia Donis Agreda},
+  pdfsubject={Modelos de aprendizaje automático para identificar errores conceptuales matemáticos}
+}
+
+\makeatletter
+\def\@makechapterhead#1{%
+  \vspace*{18pt}%
+  {\parindent\z@\raggedright\normalfont
+    \ifnum\c@secnumdepth>\m@ne
+      \sffamily\bfseries\color{Turquesa}\fontsize{36}{40}\selectfont
+      \thechapter\par\nobreak\vskip 8pt
+    \fi
+    \sffamily\bfseries\color{AzulProfundo}\Huge #1\par\nobreak
+    \vskip 7pt\color{Turquesa}\hrule height 1.1pt\vskip 28pt}}
+\def\@makeschapterhead#1{%
+  \vspace*{18pt}%
+  {\parindent\z@\raggedright\normalfont
+    \sffamily\bfseries\color{AzulProfundo}\Huge #1\par\nobreak
+    \vskip 7pt\color{Turquesa}\hrule height 1.1pt\vskip 28pt}}
+\renewcommand\section{\@startsection{section}{1}{\z@}%
+  {-3.5ex \@plus -1ex \@minus -.2ex}{2.3ex \@plus .2ex}%
+  {\normalfont\Large\sffamily\bfseries\color{AzulMedio}}}
+\renewcommand\subsection{\@startsection{subsection}{2}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}{1.5ex \@plus .2ex}%
+  {\normalfont\large\sffamily\bfseries\color{TurquesaOscuro}}}
+\renewcommand\subsubsection{\@startsection{subsubsection}{3}{\z@}%
+  {-3.25ex\@plus -1ex \@minus -.2ex}{1.5ex \@plus .2ex}%
+  {\normalfont\normalsize\sffamily\bfseries\color{AzulProfundo}}}
+\makeatother
+
+% =============================================================================
+% Componentes reutilizables
+% =============================================================================
+\newsavebox{\infobox}
+\newenvironment{hallazgo}[1][]{%
+  \begin{lrbox}{\infobox}\begin{minipage}{0.92\textwidth}
+  \color{GrisTexto}\sffamily\textbf{#1}\par\smallskip\rmfamily}
+  {\end{minipage}\end{lrbox}\par\medskip\noindent
+   \colorbox{CelesteClaro}{\usebox{\infobox}}\par\medskip}
+\newenvironment{decision}[1][]{%
+  \begin{lrbox}{\infobox}\begin{minipage}{0.92\textwidth}
+  \color{GrisTexto}\sffamily\textbf{#1}\par\smallskip\rmfamily}
+  {\end{minipage}\end{lrbox}\par\medskip\noindent
+   \colorbox{VerdeClaro}{\usebox{\infobox}}\par\medskip}
+\newenvironment{advertencia}[1][]{%
+  \begin{lrbox}{\infobox}\begin{minipage}{0.92\textwidth}
+  \color{GrisTexto}\sffamily\textbf{#1}\par\smallskip\rmfamily}
+  {\end{minipage}\end{lrbox}\par\medskip\noindent
+   \colorbox{AmarilloClaro}{\usebox{\infobox}}\par\medskip}
+\newenvironment{ficha}[1][]{%
+  \begin{lrbox}{\infobox}\begin{minipage}{0.90\textwidth}
+  \color{AzulProfundo}\sffamily\textbf{#1}\par\smallskip\rmfamily}
+  {\end{minipage}\end{lrbox}\par\medskip\noindent
+   \fcolorbox{Arena}{ArenaClara}{\usebox{\infobox}}\par\medskip}
+
+\newcolumntype{Y}{>{\raggedright\arraybackslash}X}
+\newcolumntype{C}[1]{>{\centering\arraybackslash}p{#1}}
+\newcolumntype{P}[1]{>{\raggedright\arraybackslash}p{#1}}
+\newcommand{\codigo}[1]{\texttt{#1}}
+\newcommand{\articulo}[1]{\textcolor{AzulMedio}{\textbf{#1}}}
+\newcommand{\nivel}[1]{\textcolor{TurquesaOscuro}{\sffamily\bfseries #1}}
+\newcommand{\figura}[4][0.90\textwidth]{%
+  \begin{figure}[htbp]
+    \centering
+    \includegraphics[width=#1]{#2}
+    \caption{#3}
+    \label{#4}
+  \end{figure}}
+
+\begin{document}
+\hypersetup{pageanchor=false}
+
+% =============================================================================
+% Portada
+% =============================================================================
+\begin{titlepage}
+\pagecolor{AzulProfundo}
+\color{white}
+
+\begin{minipage}[t]{0.35\textwidth}
+  \includegraphics[width=3.2cm]{logo_uvg.png}
+\end{minipage}%
+\begin{minipage}[t]{0.63\textwidth}
+  \raggedleft
+  {\sffamily\bfseries\Large Universidad del Valle de Guatemala\par}
+  \vspace{1mm}
+  {\sffamily Facultad de Ingeniería\par}
+  {\sffamily Departamento de Ciencias de la Computación\par}
+\end{minipage}
+
+\vfill
+
+{\sffamily\bfseries\color{Turquesa}\Large Proyecto 2 -- Aprendizaje automático\par}
+\vspace{0.55cm}
+{\sffamily\bfseries\fontsize{31}{36}\selectfont
+Revisión bibliográfica y\par
+selección preliminar de modelos\par}
+\vspace{0.6cm}
+{\Large\color{Arena}
+Identificación de errores conceptuales matemáticos en explicaciones
+estudiantiles mediante NLP\par}
+
+\vspace{1.0cm}
+\noindent\fcolorbox{white!40!AzulProfundo}{AzulProfundo}{%
+\begin{minipage}{0.94\textwidth}
+\vspace{3mm}
+\color{white}
+\begin{tabularx}{\textwidth}{@{}>{\sffamily\bfseries}p{3.5cm}Y@{}}
+Caso de estudio: & MAP -- Charting Student Math Misunderstandings\\[1.5mm]
+Curso: & CC3084 -- Data Science\\[1.5mm]
+Docente: & Lynette García Pérez\\[1.5mm]
+Grupo y sección: & Grupo 1, sección 10\\[1.5mm]
+Integrantes: & Jorge Gabriel Palacios Sales\\
+& Pablo Daniel Barillas Moreno\\
+& Roberto Emiliano Otoniel Camposeco Torres\\
+& Abby Sofia Donis Agreda\\[1.5mm]
+Área: & Procesamiento del Lenguaje Natural y analítica educativa\\
+\end{tabularx}
+\vspace{3mm}
+\end{minipage}}
+
+\vfill
+{\sffamily\large Guatemala, agosto de 2026\par}
+\end{titlepage}
+\nopagecolor
+\hypersetup{pageanchor=true}
+
+\frontmatter
+
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
+
+Este documento revisa la literatura sobre calificación automática de respuestas
+cortas, clasificación de explicaciones estudiantiles y detección de errores
+conceptuales, con énfasis en modelos aplicables al reto \emph{MAP -- Charting
+Student Math Misunderstandings}. El corpus local analizado contiene 36,696
+explicaciones asociadas con 15 preguntas, 49 opciones distintas, 35 concepciones
+erróneas y 65 etiquetas compuestas. Esta combinación hace que el problema no sea una simple
+clasificación de texto: la interpretación depende de la pregunta, la respuesta
+seleccionada, la corrección matemática y la distribución de clases de cola larga.
+
+La evidencia revisada muestra una evolución desde similitud léxica, ingeniería de
+características y máquinas de vectores de soporte, hacia redes recurrentes,
+Transformers ajustados y adaptación de dominio. Los hallazgos convergen en cuatro
+ideas: (a) los modelos lineales con TF--IDF siguen siendo líneas base competitivas,
+baratas e interpretables; (b) incluir la pregunta y el contexto supera el uso
+aislado de la respuesta; (c) los Transformers capturan paráfrasis y relaciones
+semánticas, pero requieren validación estricta y control de sesgos; y (d) la
+adaptación al dominio y los ensambles híbridos suelen mejorar la robustez cuando
+el corpus etiquetado es limitado o desbalanceado.
+
+Se selecciona preliminarmente una estrategia de cuatro niveles. Primero, un
+baseline de TF--IDF de palabras y caracteres con regresión logística y SVM lineal.
+Segundo, un modelo principal basado en DeBERTa/BERT que reciba conjuntamente
+pregunta, opción y explicación, con cabezas jerárquicas para \codigo{Category} y
+\codigo{Misconception}. Tercero, adaptación de dominio mediante preentrenamiento
+continuado o MathBERT. Cuarto, un ensamble calibrado que produzca las tres parejas
+\codigo{Category:Misconception} mejor posicionadas, coherente con MAP@3. Los LLM
+generativos se reservan como comparación y herramienta de auditoría, no como
+solución primaria, por reproducibilidad, costo, privacidad y trazabilidad.
+
+\begin{decision}[Decisión preliminar]
+La ruta recomendada es \textbf{baseline lineal híbrido $\rightarrow$ Transformer
+contextual y multitarea $\rightarrow$ adaptación de dominio $\rightarrow$
+ensamble y ranking top--3}. La evaluación debe comparar una partición estratificada
+para preguntas conocidas con otra agrupada por \codigo{QuestionId} para transferencia;
+ambas deben reportar MAP@3, macro F1, desempeño por clase/pregunta y calibración.
+\end{decision}
+
+\chapter*{Alcance y trazabilidad}
+\addcontentsline{toc}{chapter}{Alcance y trazabilidad}
+
+\begin{tabularx}{\textwidth}{@{}P{3.3cm}Y@{}}
+\toprule
+\textbf{Elemento} & \textbf{Tratamiento en este informe}\\
+\midrule
+Revisión bibliográfica & Artículos de revistas arbitradas e indexadas como corpus
+principal; trabajos fundacionales de conferencia o preprint se identifican como
+fuentes complementarias.\\
+Norma de citación & Citas autor--fecha en el cuerpo y referencias finales en estilo
+APA, séptima edición.\\
+Selección preliminar & Algoritmos, arquitectura, variables de entrada, validación,
+métricas, riesgos y criterios de descarte.\\
+Datos del proyecto & Resultados ya obtenidos en el análisis exploratorio; el
+notebook no fue reejecutado para preparar este documento.\\
+Límite & No se reportan resultados de entrenamiento. Las puntuaciones de la matriz
+de decisión son juicios de diseño, no métricas experimentales.\\
+\bottomrule
+\end{tabularx}
+
+\tableofcontents
+\listoftables
+\listoffigures
+
+\mainmatter
+
+% =============================================================================
+\chapter{Planteamiento del problema}
+% =============================================================================
+
+\section{Contexto educativo y computacional}
+
+Los errores matemáticos no son únicamente respuestas incorrectas. Con frecuencia
+constituyen evidencias de una regla aplicada fuera de contexto, una confusión de
+signos, una generalización excesiva o una representación incompleta del problema.
+La explicación escrita permite diferenciar un descuido de cálculo de una idea
+equivocada persistente. Esta distinción es pedagógicamente útil porque una
+retroalimentación adecuada depende de la causa del error y no solo del resultado.
+El análisis de errores puede convertir una respuesta fallida en evidencia del
+razonamiento del estudiante y en una oportunidad de aprendizaje más profundo
+(Rushton, 2018).
+
+El reto MAP plantea automatizar parte de ese diagnóstico (Kaggle, 2025). A partir de una
+pregunta de opción múltiple, la opción elegida y una explicación breve, un sistema
+debe predecir la categoría de la respuesta y, cuando corresponde, el error
+conceptual asociado. El resultado esperado no es texto libre, sino una lista
+ordenada de hasta tres pares \codigo{Category:Misconception}. Por tanto, el
+problema combina clasificación multiclase, predicción jerárquica, ranking y
+procesamiento del lenguaje matemático.
+
+\begin{hallazgo}[Situación problemática]
+Revisar manualmente miles de explicaciones breves exige tiempo especializado y
+produce variabilidad entre evaluadores. Un clasificador confiable puede priorizar
+casos, sugerir etiquetas y acelerar la retroalimentación; no debe sustituir de
+forma ciega el juicio docente, especialmente en clases raras o explicaciones
+ambiguas.
+\end{hallazgo}
+
+\section{Problema científico}
+
+\textbf{Pregunta de investigación.} ¿Qué combinación de representaciones léxicas,
+modelos contextuales y estrategias de adaptación al dominio permite ordenar con
+mayor precisión las categorías y los errores conceptuales matemáticos presentes
+en explicaciones estudiantiles cortas, manteniendo generalización a preguntas no
+vistas, reproducibilidad y trazabilidad?
+
+La pregunta contiene cinco exigencias. Primero, comprender lenguaje informal y
+notación matemática. Segundo, condicionar la explicación a la pregunta y a la
+opción seleccionada. Tercero, aprender clases desbalanceadas. Cuarto, producir un
+ranking top--3 y no una sola etiqueta. Quinto, demostrar que el modelo reconoce
+patrones conceptuales y no memoriza identificadores o frases de una pregunta.
+
+\section{Objetivos}
+
+\subsection{Objetivo general}
+
+Revisar críticamente algoritmos de aprendizaje automático aplicados a calificación
+automática, clasificación de respuestas cortas y detección de errores conceptuales,
+para seleccionar una arquitectura preliminar adecuada al reto MAP.
+
+\subsection{Objetivos específicos}
+
+\begin{enumerate}
+  \item Identificar familias de modelos, representaciones y esquemas de evaluación
+  utilizados en literatura académica comparable.
+  \item Contrastar sus ventajas y limitaciones frente al tamaño, estructura,
+  desbalance y dependencia contextual del corpus MAP.
+  \item Seleccionar líneas base, un modelo principal, alternativas de adaptación de
+  dominio y un método de ensamble/ranking.
+  \item Diseñar un plan experimental que evite fuga entre preguntas y mida
+  desempeño global, por clase y por pregunta.
+  \item Establecer controles de confiabilidad, explicabilidad y supervisión humana.
+\end{enumerate}
+
+% =============================================================================
+\chapter{Metodología de revisión bibliográfica}
+% =============================================================================
+
+\section{Alcance de la búsqueda}
+
+La revisión es narrativa y orientada al diseño. Se priorizaron publicaciones entre
+2015 y agosto de 2026 en revistas arbitradas e indexadas relacionadas con
+inteligencia artificial en educación, tecnologías de aprendizaje, aprendizaje
+interactivo, aplicaciones de IA y educación científica. Se consultaron las páginas
+oficiales de editoriales y los registros DOI para verificar título, año, volumen y
+paginación o número de artículo.
+
+Las cadenas conceptuales de búsqueda combinaron términos como \emph{automatic
+short-answer grading}, \emph{student response classification}, \emph{math
+misconception detection}, \emph{BERT}, \emph{Transformer}, \emph{domain-specific
+pretraining}, \emph{question context}, \emph{augmentation}, \emph{robustness} y
+\emph{human-in-the-loop}. Se incluyeron trabajos que aportaran al menos uno de
+estos elementos: comparación de algoritmos, representación textual, uso de
+contexto, adaptación de dominio, transferencia, evaluación de generalización o
+análisis de confiabilidad.
+
+\section{Criterios de inclusión y exclusión}
+
+\begin{table}[H]
+\centering
+\caption{Criterios aplicados en la revisión}
+\label{tab:criterios-revision}
+\begin{tabularx}{\textwidth}{@{}P{3.2cm}YY@{}}
+\toprule
+\textbf{Dimensión} & \textbf{Inclusión} & \textbf{Exclusión o uso secundario}\\
+\midrule
+Tipo de fuente & Artículo completo en revista arbitrada; metadatos verificables y
+DOI cuando existe. & Blogs, resúmenes comerciales y repositorios sin revisión como
+evidencia principal.\\
+Problema & Respuestas cortas, clasificación de razonamiento, retroalimentación o
+errores conceptuales. & Calificación de ensayos largos sin conexión metodológica
+con respuestas breves.\\
+Método & Modelos clásicos, redes neuronales, Transformers, LLM, ensambles,
+adaptación y robustez. & Sistemas sin descripción suficiente del método o la
+evaluación.\\
+Transferibilidad & Resultados que permitan derivar una decisión para MAP. & Cifras
+aisladas cuya tarea o métrica no es comparable.\\
+Fuentes fundacionales & Conferencias arbitradas y preprints se usan para documentar
+BERT, DeBERTa, MathBERT y el origen del benchmark. & No se confunden con el núcleo
+de artículos de revista solicitado.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Procedimiento de síntesis}
+
+Para cada trabajo se registraron: tarea, datos, familia algorítmica, incorporación
+de contexto, métricas, aporte y limitación transferible. Después se agruparon los
+estudios por generación metodológica y se contrastaron con las restricciones del
+corpus local. Las cifras publicadas se conservan como evidencia de cada escenario,
+pero no se comparan directamente entre artículos porque cambian corpus, idiomas,
+escalas de nota y particiones.
+
+\begin{advertencia}[Interpretación responsable]
+Una mejora de exactitud en otro conjunto no garantiza la misma mejora en MAP. La
+revisión sirve para formular hipótesis y reducir el espacio de búsqueda; solamente
+la evaluación local, con particiones sin fuga, puede confirmar la selección.
+\end{advertencia}
+
+% =============================================================================
+\chapter{El caso MAP y sus requisitos de modelado}
+% =============================================================================
+
+\section{Unidad de análisis y variables}
+
+Cada observación representa una explicación estudiantil vinculada con una
+pregunta y una opción. La señal útil está distribuida entre variables: el texto
+describe el razonamiento, la opción acota el resultado elegido y la pregunta
+determina el significado matemático de las palabras y símbolos. Esto sugiere una
+entrada compuesta y no un clasificador que lea solo la explicación.
+
+\begin{table}[H]
+\centering
+\caption{Traducción de las variables de MAP a decisiones de modelado}
+\label{tab:variables-modelo}
+\begin{tabularx}{\textwidth}{@{}P{3.7cm}YY@{}}
+\toprule
+\textbf{Señal} & \textbf{Función} & \textbf{Tratamiento propuesto}\\
+\midrule
+\codigo{QuestionId}/pregunta & Define el contexto conceptual y el vocabulario
+relevante. & Incorporar texto o identificador controlado; agrupar por pregunta en
+validación.\\
+\codigo{AnswerText} u opción & Expresa el resultado que el estudiante defendió. &
+Concatenar con la explicación mediante separadores.\\
+\codigo{StudentExplanation} & Contiene las pistas lingüísticas, operaciones y
+negaciones. & Conservar números, signos, fracciones y negaciones; producir
+representación léxica y contextual.\\
+\codigo{Category} & Describe la clase general de corrección/atribución. & Primera
+cabeza de clasificación o primer nivel jerárquico.\\
+\codigo{Misconception} & Etiqueta conceptual específica, válida solo en ciertos
+casos. & Segunda cabeza condicional; máscara de pérdida cuando no aplica.\\
+Pareja de salida & Unidad evaluada y ordenada. & Probabilidad conjunta y ranking
+de tres candidatos.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Hallazgos del análisis exploratorio local}
+
+El análisis previo identificó 36,696 observaciones, 15 preguntas, 49 opciones
+distintas, 35 concepciones erróneas y 65 etiquetas compuestas. La categoría
+\codigo{True\_Correct} representa 40.34\%. La explicación típica es breve: la
+mediana es de 13 palabras y la media de 15.36. Además, 26,836 filas (73.1\%) no contienen una etiqueta en
+\codigo{Misconception}; esta ausencia es principalmente estructural, porque una
+etiqueta específica no corresponde a todas las categorías, y no debe imputarse
+como si fuera un valor perdido ordinario.
+
+\figura[0.88\textwidth]{distribucion_misconceptions.png}{Distribución de etiquetas
+de error conceptual en el conjunto analizado. La cola larga exige métricas y
+estrategias sensibles a clases minoritarias.}{fig:misconceptions}
+
+La Figura~\ref{fig:misconceptions} muestra que unas pocas etiquetas concentran
+muchas observaciones y varias poseen soporte reducido. En estas condiciones, la
+exactitud puede ocultar el fracaso en conceptos raros. Se requieren macro F1,
+recall por clase y análisis de errores, además de MAP@3.
+
+\figura[0.90\textwidth]{cruces_por_pregunta.png}{Cruces por pregunta obtenidos en
+el análisis exploratorio. El patrón varía entre contextos y justifica comparar
+validación estratificada y agrupada.}{fig:preguntas}
+
+La heterogeneidad entre preguntas observada en la Figura~\ref{fig:preguntas}
+implica riesgo de fuga: una partición aleatoria por filas puede colocar frases muy
+similares de una misma pregunta en entrenamiento y validación. Un resultado alto
+en esa partición mediría, en parte, memorización del contexto. Por ello se propone
+reportar dos escenarios: estratificado por filas para preguntas conocidas y
+agrupado por \codigo{QuestionId} como prueba de transferencia. Debido a que 32 de
+las 35 concepciones son exclusivas de una pregunta, ninguno debe interpretarse de
+forma aislada.
+
+\section{Requisitos derivados}
+
+\begin{enumerate}
+  \item \textbf{Contextualidad:} interpretar explicación, pregunta y opción en
+  conjunto.
+  \item \textbf{Sensibilidad matemática:} conservar símbolos, cantidades,
+  operadores, signos y negaciones.
+  \item \textbf{Jerarquía:} modelar primero la categoría y después el concepto
+  erróneo cuando corresponda.
+  \item \textbf{Cola larga:} ponderar clases, usar muestreo controlado y evitar que
+  las clases frecuentes dominen la pérdida.
+  \item \textbf{Ranking:} calibrar probabilidades y optimizar una lista top--3.
+  \item \textbf{Generalización:} probar preguntas no vistas y variaciones
+  lingüísticas.
+  \item \textbf{Trazabilidad:} disponer de una línea base interpretable y análisis
+  humano de falsos positivos/negativos.
+\end{enumerate}
+
+% =============================================================================
+\chapter{Revisión de algoritmos y arquitecturas}
+% =============================================================================
+
+\section{De reglas y similitud a aprendizaje supervisado}
+
+La revisión histórica de Burrows et al. (2015), que organiza más de ochenta
+trabajos de calificación automática de respuestas cortas, distingue una evolución
+desde reglas y coincidencia con respuestas modelo hacia métodos estadísticos y de
+aprendizaje automático. Los primeros sistemas eran transparentes, pero dependían
+de plantillas y vocabularios elaborados por expertos. Funcionaban mejor cuando la
+respuesta esperada estaba estrechamente delimitada y peor ante paráfrasis,
+ortografía no estándar o razonamientos novedosos.
+
+Los métodos de similitud comparan la respuesta estudiantil con una referencia por
+superposición de palabras, distancia de edición, similitud coseno o recursos
+semánticos. Son útiles como características y como control de calidad, pero no
+constituyen por sí solos una solución suficiente para MAP: dos estudiantes pueden
+usar vocabulario parecido y defender conclusiones conceptualmente opuestas, o usar
+palabras distintas para expresar el mismo error.
+
+\section{TF--IDF, regresión logística y SVM}
+
+La representación TF--IDF asigna mayor peso a términos informativos y reduce la
+influencia de palabras frecuentes. Con $tf(t,d)$ como frecuencia del término $t$
+en el documento $d$, y $N$ documentos, una forma común es
+
+\[
+\operatorname{tfidf}(t,d)=tf(t,d)\log\left(\frac{N+1}{df(t)+1}\right).
+\]
+
+Sobre esta matriz dispersa, la regresión logística estima probabilidades de clase
+y la SVM lineal maximiza márgenes de separación. Los n-gramas de palabras capturan
+frases como ``se cambia el signo'', mientras los n-gramas de caracteres toleran
+errores ortográficos y conservan fragmentos de notación. La revisión de GradeAid
+señala que SVM, bolsa de palabras y \emph{word embeddings} han sido recursos muy
+frecuentes en ASAG; su propuesta híbrida combina TF--IDF y señales de BERT con
+regresores y logra errores competitivos en varios conjuntos públicos (del Gobbo
+et al., 2023).
+
+Para MAP estos métodos ofrecen tres ventajas: entrenamiento rápido, coeficientes
+inspeccionables y un piso reproducible. Su limitación es la semántica: una bolsa de
+palabras no representa bien el orden, la referencia contextual o el efecto de una
+negación distante. Por ello deben considerarse baseline obligatorio y componente
+de ensamble, no única solución final.
+
+\section{Ingeniería de características y ensambles}
+
+Sahu y Bhowmick (2020) combinaron características léxicas, de alineamiento y
+semánticas mediante un esquema de regresión apilada. El ensamble mejoró la
+calificación automática frente a modelos individuales, lo que sugiere que ninguna
+representación captura por sí sola toda la evidencia de una respuesta breve. La
+lección transferible es conservar señales complementarias: n-gramas, longitud,
+coincidencias numéricas, operadores, negaciones, opción elegida y representación
+contextual.
+
+En MAP un ensamble no necesita ser excesivamente complejo. Puede combinar la
+probabilidad calibrada del modelo lineal y la del Transformer. Si $p_L(y\mid x)$
+es la distribución lineal y $p_T(y\mid x)$ la contextual, una primera formulación
+es
+
+\[
+p_E(y\mid x)=\alpha p_T(y\mid x)+(1-\alpha)p_L(y\mid x),
+\quad 0\leq\alpha\leq1,
+\]
+
+donde $\alpha$ se elige exclusivamente con validación. También puede aprenderse un
+meta-modelo sobre predicciones \emph{out-of-fold}; entrenarlo sobre predicciones
+del mismo conjunto produciría fuga.
+
+\section{Modelos recurrentes y orden de palabras}
+
+Las redes LSTM modelan secuencias y mitigan parte del desvanecimiento del gradiente
+de RNN simples. Zhang et al. (2022) propusieron un modelo para preguntas
+semiabiertas que integra información general y específica del dominio con LSTM.
+Su evaluación, basada en más de 16,000 respuestas de siete preguntas, respalda la
+utilidad de conservar orden y contexto. Sin embargo, las LSTM procesan tokens
+secuencialmente y suelen depender más de la cantidad de datos etiquetados que un
+Transformer preentrenado.
+
+Se mantendría una BiLSTM como ablación si el costo lo permite, pero no es la
+primera candidata: el corpus MAP posee textos cortos y suficientes señales para
+comparar un baseline lineal fuerte con un Transformer. Esa comparación responde
+mejor a la pregunta práctica de cuánto valor aporta la contextualización moderna.
+
+\section{La pregunta y el estudiante como contexto}
+
+Zhang et al. (2020) demostraron que combinar modelos de la pregunta y del
+estudiante puede mejorar métodos basados únicamente en la respuesta. Aunque su
+arquitectura utiliza una red de creencia profunda, el aporte más relevante para
+MAP es conceptual: la misma frase cambia de interpretación según el enunciado y el
+historial o contexto disponible.
+
+MAP no proporciona necesariamente una secuencia longitudinal completa por
+estudiante, pero sí ofrece \codigo{QuestionId} y opción. En consecuencia, se puede
+preservar la idea mediante una entrada estructurada:
+
+\begin{center}
+\fcolorbox{Arena}{ArenaClara}{\parbox{0.88\textwidth}{\centering\ttfamily
+[PREGUNTA] texto o identificador [SEP] [OPCIÓN] respuesta elegida [SEP]
+[EXPLICACIÓN] razonamiento estudiantil}}
+\end{center}
+
+El identificador no debe convertirse en un atajo. Cuando el texto completo de la
+pregunta esté disponible, es preferible porque ofrece significado transferible.
+Si solo existe el ID, debe comprobarse el desempeño en preguntas no vistas y
+considerarse una codificación ``desconocida''.
+
+\section{BERT y Transformers ajustados}
+
+BERT aprende representaciones bidireccionales mediante preentrenamiento con texto
+no etiquetado y después se ajusta a una tarea supervisada (Devlin et al., 2019).
+Zhu et al. (2022) combinaron BERT, BiLSTM, redes cápsula y una función de pérdida
+específica, superando métodos previos en conjuntos de referencia de ASAG. El
+resultado apoya la capacidad de los Transformers para reconocer equivalencia
+semántica con pocos ejemplos en comparación con redes entrenadas desde cero.
+
+La revisión de Morley et al. (2026) sobre los años fundacionales de Transformers
+en calificación automática de respuestas científicas encontró que BERT y sus
+variantes son la familia predominante y que el contexto de pregunta, rúbrica o
+material de apoyo puede mejorar el sistema. Al mismo tiempo, la revisión señala
+problemas pendientes de confiabilidad, explicación y sesgo. Por ello no basta con
+reportar una métrica agregada.
+
+DeBERTa modifica la atención y la codificación posicional mediante atención
+desentrelazada y un decodificador mejorado (He et al., 2021). Se propone como
+candidato principal por su fortaleza general en clasificación, pero debe
+compararse con BERT/RoBERTa bajo el mismo presupuesto. La elección definitiva no
+se realizará por popularidad, sino por MAP@3, macro F1, estabilidad entre semillas
+y costo.
+
+\section{Adaptación de dominio para matemáticas}
+
+El lenguaje matemático escolar contiene expresiones y símbolos cuya distribución
+difiere del texto general. MathBERT fue preentrenado sobre material de educación
+matemática y mostró la viabilidad de especializar un Transformer para tareas del
+dominio (Shen et al., 2021). Como se trata de un preprint, se utiliza como fuente
+arquitectónica complementaria y no como evidencia principal de revista.
+
+La evidencia indexada de Bonthu et al. (2024) es más generalizable: su marco
+PyDSBERT construye un corpus no etiquetado del dominio, continúa el preentrenamiento
+y ajusta el modelo a calificación. En su escenario reportó 88.77\% de exactitud y
+91.59\% de F1, con mejoras de varios puntos sobre referencias. Estas cifras no se
+trasladan directamente a MAP, pero justifican probar \emph{domain-adaptive
+pretraining} cuando exista texto matemático adicional y el presupuesto lo permita.
+
+Wang et al. (2025) extendieron BERT con una perspectiva ontológica para clasificar
+niveles de experiencia científica. Su combinación de conocimiento de dominio,
+balanceo y evaluación mediante F1, exactitud y kappa ponderado confirma que la
+estructura conceptual puede complementar la representación contextual. Para MAP,
+la taxonomía de errores puede actuar como conocimiento: descripciones de las
+etiquetas, relaciones entre conceptos y restricciones de compatibilidad con la
+pregunta pueden alimentar un clasificador o un re-ranker.
+
+\section{Transferencia y aumento de datos}
+
+Bonthu et al. (2023) ajustaron modelos de oraciones y aplicaron reemplazo de
+sinónimos e intercambio aleatorio; reportaron aumentos de 4.91\% en exactitud y
+3.36\% en F1 en su tarea. La transferencia es atractiva para clases raras, pero el
+aumento debe respetar la semántica matemática. Cambiar un número, signo, operador
+o negación puede alterar la etiqueta correcta. En lugar de aumentos ciegos se
+recomiendan transformaciones conservadoras: correcciones ortográficas verificadas,
+variantes de puntuación, espacios alrededor de operadores y paráfrasis revisadas
+por una persona con conocimiento matemático.
+
+\section{Generalización a preguntas no vistas}
+
+Padó et al. (2024) observaron que los Transformers eran robustos cuando las
+respuestas se parecían al dominio visto, pero no superaron necesariamente modelos
+lingüísticos diseñados a mano en tareas con preguntas no vistas. Este hallazgo es
+central para MAP: un modelo puede parecer preciso en una división aleatoria y
+fallar cuando cambia el concepto o el enunciado.
+
+La consecuencia metodológica es directa. La evaluación debe comparar una división
+estratificada con \emph{GroupKFold} o una variante de dejar preguntas fuera. Deben
+separarse dos objetivos: desempeño operativo sobre preguntas conocidas y capacidad
+de transferencia. El segundo escenario contiene numerosas etiquetas no vistas por
+construcción; por ello es una prueba de extrapolación y no reemplaza la evaluación
+operativa.
+
+\section{LLM generativos y evaluación con intervención humana}
+
+Los LLM pueden clasificar mediante instrucciones y ejemplos sin entrenamiento
+convencional. Grévisse (2024) evaluó respuestas médicas breves en 12 cursos y tres
+idiomas; GPT--4 y Gemini alcanzaron acuerdos moderados, pero la supervisión humana
+siguió siendo necesaria. El benchmark específico de errores matemáticos de Otero
+et al. (2025), formado por 55 conceptos erróneos y 220 ejemplos diagnósticos,
+encontró que restringir el tema y añadir revisión de educadores puede elevar el
+desempeño de modelos grandes hasta 83.9\% en su configuración. La lección no es que
+el LLM deba reemplazar al clasificador, sino que la información temática y el
+juicio experto reducen ambigüedad.
+
+Para el proyecto, un LLM alojado externamente introduce variabilidad de versión,
+costo, latencia, privacidad y dificultad para repetir exactamente el experimento.
+Puede usarse como comparación \emph{zero-shot}/\emph{few-shot}, generador de
+hipótesis o asistente para revisar errores, siempre sin enviar datos sensibles y
+registrando modelo, fecha, parámetros y plantilla de prompt.
+
+\section{Confiabilidad, ataques y supervisión}
+
+Schneider et al. (2023) estudiaron calificación multilingüe y multiformato a gran
+escala. Su trabajo muestra que combinar Transformers con intervención humana puede
+alcanzar niveles comparables a asistentes de docencia y, sobre todo, permite
+controlar tipos de error. Esto respalda un diseño de apoyo a decisiones: aceptar
+automáticamente solo predicciones bien calibradas y enviar casos inciertos a
+revisión.
+
+Filighera et al. (2024) mostraron que insertar adjetivos y adverbios en respuestas
+incorrectas puede reducir entre 10 y 22 puntos la exactitud de sistemas BERT/T5 en
+escenarios adversariales. Un sistema puede aprender pistas superficiales que no
+representan comprensión. En MAP se deben construir pruebas de contraste: añadir
+palabras irrelevantes, corregir ortografía, invertir una negación y cambiar un
+número. El modelo debería ser estable ante cambios inocuos y sensible ante cambios
+matemáticamente decisivos.
+
+% =============================================================================
+\chapter{Síntesis comparativa de la evidencia}
+% =============================================================================
+
+\small
+\begin{longtable}{@{}P{2.55cm}P{2.5cm}P{3.05cm}P{3.15cm}P{3.05cm}@{}}
+\caption{Estudios de revista y aporte transferible al caso MAP}
+\label{tab:sintesis}\\
+\toprule
+\textbf{Estudio} & \shortstack{\textbf{Problema/}\\\textbf{datos}} & \textbf{Método} &
+\textbf{Hallazgo relevante} & \textbf{Implicación para MAP}\\
+\midrule
+\endfirsthead
+\multicolumn{5}{l}{\sffamily\small\color{GrisTexto}Continuación de la Tabla~\ref{tab:sintesis}}\\
+\toprule
+\textbf{Estudio} & \shortstack{\textbf{Problema/}\\\textbf{datos}} & \textbf{Método} &
+\textbf{Hallazgo relevante} & \textbf{Implicación para MAP}\\
+\midrule
+\endhead
+\bottomrule
+\endfoot
+
+Burrows et al. (2015) & Revisión de más de 80 trabajos de respuestas cortas. &
+Reglas, similitud, ML y evaluación. & Documenta la evolución del campo y la
+escasez histórica de benchmarks públicos. & Definir baseline y evaluación
+reproducible antes de aumentar complejidad.\\[2mm]
+
+Sahu y Bhowmick (2020) & Calificación automática en conjuntos de referencia. &
+Características léxicas, alineamiento, semántica y \emph{stacking}. & Las señales
+complementarias mejoran a modelos aislados. & Ensamblar evidencia lineal y
+contextual usando predicciones fuera de muestra.\\[2mm]
+
+Zhang et al. (2020) & Respuestas estudiantiles condicionadas por pregunta y
+estudiante. & Red de creencia profunda con modelos de contexto. & Pregunta y
+estudiante agregan información frente a respuesta sola. & Concatenar pregunta,
+opción y explicación; evaluar el aporte de cada bloque.\\[2mm]
+
+Zhang et al. (2022) & Más de 16,000 respuestas semiabiertas, siete preguntas. &
+LSTM con información general y específica del dominio. & El orden y el dominio
+mejoran la representación. & Ablación secuencial opcional; preservar orden y
+notación.\\[2mm]
+
+Zhu et al. (2022) & SemEval 2013 y conjunto Mohler. & BERT, BiLSTM, cápsulas y
+pérdida especializada. & El preentrenamiento contextual supera referencias en sus
+conjuntos. & Ajustar un Transformer y compararlo bajo la misma partición.\\[2mm]
+
+del Gobbo et al. (2023) & Múltiples conjuntos públicos de ASAG. & TF--IDF, BERT y
+regresores. & La combinación léxica-semántica es robusta entre dominios. & Conservar
+TF--IDF como baseline y componente de ensamble.\\[2mm]
+
+Bonthu et al. (2023) & ASAG con datos etiquetados limitados. & Transferencia con
+Transformers de oraciones y aumento. & Reporta +4.91\% en exactitud y +3.36\% en F1
+en su escenario. & Probar aumento conservador, nunca alterar significado
+matemático.\\[2mm]
+
+Padó et al. (2024) & ASAG en alemán, preguntas vistas y no vistas. & Transformers y
+modelos lingüísticos. & El Transformer no domina necesariamente en preguntas no
+vistas. & La prueba agrupada por pregunta es indispensable.\\[2mm]
+
+Bonthu et al. (2024) & Adaptación de dominio para respuestas cortas. &
+Preentrenamiento específico y ajuste supervisado. & PyDSBERT reporta 88.77\% de
+exactitud y 91.59\% F1 en SPRAG. & Probar preentrenamiento continuado con corpus
+matemático.\\[2mm]
+
+Schneider et al. (2023) & Cerca de 10 millones de pares, múltiples idiomas y tipos.
+& Transformer con flujo humano. & La intervención humana controla fallos y eleva
+confiabilidad. & Abstención por incertidumbre y revisión de casos críticos.\\[2mm]
+
+Filighera et al. (2024) & Ataques de caja negra a ASAG. & Inserción adversarial de
+adjetivos/adverbios contra BERT/T5. & Descensos de 10--22 puntos evidencian atajos
+léxicos. & Incluir pruebas de contraste y auditoría de tokens influyentes.\\[2mm]
+
+Grévisse (2024) & 2,288 respuestas, 82 preguntas, 12 cursos y tres idiomas. &
+GPT--4 y Gemini con prompting. & Acuerdo moderado y necesidad de supervisión. & LLM
+solo como comparador/auditor; registrar versión y prompts.\\[2mm]
+
+Wang et al. (2025) & Clasificación de experiencia científica en respuestas
+escritas. & BERT, ontología y balanceo. & El conocimiento estructurado complementa
+la representación textual. & Usar descripciones y compatibilidades de la taxonomía
+de errores.\\[2mm]
+
+Otero et al. (2025) & 55 errores matemáticos y 220 ejemplos diagnósticos. & LLM con
+restricción temática y revisión experta. & Hasta 83.9\% en la configuración
+reportada. & Limitar candidatos por tema/pregunta y mantener revisión docente.\\[2mm]
+
+Morley et al. (2026) & Revisión de 21 artículos sobre respuestas científicas. &
+BERT a GPT--4. & Predominan BERT/variantes; contexto ayuda; persisten riesgos. &
+Transformer contextual con métricas de confiabilidad y explicación.\\
+\end{longtable}
+\normalsize
+
+\section{Patrones convergentes}
+
+\begin{enumerate}
+  \item \textbf{El contexto importa.} Pregunta, dominio y rúbrica contienen señal
+  que la respuesta aislada no puede reconstruir (Zhang et al., 2020;
+  Morley et al., 2026).
+  \item \textbf{Lo híbrido es competitivo.} TF--IDF y BERT capturan fenómenos
+  distintos; combinarlos mejora robustez y conserva interpretabilidad parcial
+  (del Gobbo et al., 2023; Sahu \& Bhowmick, 2020).
+  \item \textbf{El dominio merece adaptación.} Preentrenar o incorporar conocimiento
+  específico ayuda cuando el vocabulario y las relaciones difieren del texto
+  general (Bonthu et al., 2024; Wang et al., 2025).
+  \item \textbf{La validación define la conclusión.} Una partición con preguntas
+  vistas responde a una pregunta distinta de otra con preguntas no vistas (Padó
+  et al., 2024).
+  \item \textbf{Precisión no equivale a confiabilidad.} Los modelos pueden explotar
+  atajos y fallar ante perturbaciones; la calibración, el análisis de error y la
+  intervención humana son componentes del sistema (Filighera et al., 2024;
+  Schneider et al., 2023).
+\end{enumerate}
+
+\section{Vacíos identificados}
+
+La literatura de ASAG suele predecir una nota ordinal o binaria; MAP requiere
+clasificar la naturaleza del razonamiento y ordenar pares jerárquicos. Muchos
+estudios usan pocas preguntas, lo que dificulta estudiar transferencia. Además,
+las comparaciones entre modelos rara vez controlan simultáneamente clases de cola
+larga, notación matemática, calibración y robustez adversarial. Finalmente, los
+LLM recientes añaden capacidad semántica, pero también dependencia de servicios,
+versiones y políticas difíciles de congelar.
+
+Estos vacíos hacen que la contribución del proyecto no sea simplemente ajustar un
+modelo. El valor reside en evaluar un pipeline contextual bajo dos escenarios
+complementarios ---preguntas conocidas y transferencia a preguntas no vistas---,
+explicar la ganancia sobre una línea base transparente y documentar en qué
+preguntas y conceptos falla.
+
+% =============================================================================
+\chapter{Selección preliminar de algoritmos}
+% =============================================================================
+
+\section{Criterios de decisión}
+
+Se consideran siete criterios: adecuación a texto corto, uso del contexto,
+desempeño esperado en cola larga, interpretabilidad, costo, facilidad de
+reproducir y evidencia académica. La Tabla~\ref{tab:matriz-decision} resume un
+juicio preliminar en escala 1--5. No son resultados del conjunto MAP; orientan qué
+experimentos merecen realizarse.
+
+\begin{table}[H]
+\centering
+\caption{Matriz cualitativa de decisión (1 = desfavorable; 5 = muy favorable;
+Ctx. = contexto; Int. = interpretabilidad; Evid. = evidencia)}
+\label{tab:matriz-decision}
+\small
+\begin{tabularx}{\textwidth}{@{}Y*{6}{C{1.25cm}}@{}}
+\toprule
+\textbf{Familia} & \textbf{Texto corto} & \textbf{Ctx.} &
+\textbf{Cola larga} & \textbf{Int.} & \textbf{Costo} &
+\textbf{Evid.}\\
+\midrule
+Reglas/similitud & 3 & 2 & 1 & 5 & 5 & 3\\
+TF--IDF + logística & 4 & 3 & 3 & 5 & 5 & 5\\
+TF--IDF + SVM lineal & 5 & 3 & 3 & 4 & 5 & 5\\
+BiLSTM & 3 & 4 & 3 & 2 & 3 & 4\\
+BERT/DeBERTa & 5 & 5 & 4 & 2 & 3 & 5\\
+Modelo adaptado a matemáticas & 5 & 5 & 4 & 2 & 2 & 4\\
+LLM por API & 4 & 5 & 3 & 2 & 1 & 3\\
+Ensamble lineal + Transformer & 5 & 5 & 4 & 3 & 3 & 5\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Nivel 1: baseline lineal híbrido}
+
+\nivel{Modelos seleccionados:} regresión logística multinomial y SVM lineal
+One-vs-Rest sobre la unión de TF--IDF de palabras (1--2 gramas) y caracteres
+(3--5 gramas).
+
+\textbf{Razones para considerarlos.}
+
+\begin{itemize}
+  \item Son referencias sólidas en ASAG y permiten saber si un modelo complejo
+  aprende más que vocabulario y frases frecuentes.
+  \item Los caracteres toleran errores ortográficos y conservan formas parciales de
+  números, fracciones y operadores.
+  \item La regresión logística produce probabilidades; la SVM suele ser fuerte en
+  espacios dispersos y puede calibrarse posteriormente.
+  \item Los pesos de términos permiten inspeccionar atajos, palabras asociadas con
+  cada concepto y posibles fugas por pregunta.
+  \item Su costo bajo facilita validación cruzada, búsqueda de hiperparámetros y
+  análisis por semillas.
+\end{itemize}
+
+El baseline debe comparar tres entradas: explicación sola; explicación + opción;
+y pregunta + opción + explicación. Así se cuantifica cuánto aporta el contexto sin
+atribuir automáticamente toda mejora al Transformer.
+
+\section{Nivel 2: Transformer contextual y multitarea}
+
+\nivel{Modelo principal:} DeBERTa-v3-base o, si el presupuesto computacional lo
+exige, BERT/RoBERTa base. La entrada concatena pregunta, opción y explicación. La
+salida emplea dos cabezas: categoría general y error conceptual condicional.
+
+Sea $h_{\mathrm{CLS}}$ la representación contextual conjunta. Las dos
+distribuciones se obtienen mediante
+
+\[
+p(c\mid x)=\operatorname{softmax}(W_c h_{\mathrm{CLS}}+b_c),\qquad
+p(m\mid x)=\operatorname{softmax}(W_m h_{\mathrm{CLS}}+b_m).
+\]
+
+La pérdida multitarea puede escribirse como
+
+\[
+\mathcal{L}=\mathcal{L}_{cat}+\lambda\,I(m\text{ aplica})\mathcal{L}_{misc},
+\]
+
+donde la máscara $I(\cdot)$ evita convertir la ausencia estructural de
+\codigo{Misconception} en una clase artificial. Se evaluarán pérdida ponderada,
+\emph{focal loss} o muestreo balanceado únicamente con validación, pues una
+corrección agresiva puede descalibrar el ranking.
+
+\textbf{Razones para considerarlo.}
+
+\begin{itemize}
+  \item La literatura reciente muestra ventajas de representaciones
+  bidireccionales preentrenadas en respuestas cortas (Zhu et al., 2022; Morley et
+  al., 2026).
+  \item La atención contextual puede distinguir negaciones y el papel de una frase
+  dentro de la pregunta.
+  \item La arquitectura multitarea refleja que categoría y error conceptual están
+  relacionados, pero no son idénticos.
+  \item DeBERTa es suficientemente establecido para clasificación y viable en una
+  GPU académica con secuencias cortas.
+\end{itemize}
+
+\section{Nivel 3: adaptación al lenguaje matemático}
+
+\nivel{Alternativas:}\par (a) inicializar desde MathBERT; o (b) continuar el
+preentrenamiento de BERT/DeBERTa mediante \emph{masked language modeling} sobre
+explicaciones y material matemático no etiquetado, y luego ajustar la tarea.
+
+Esta fase se ejecutará después del Transformer base. Solo se justifica si aporta
+una mejora estable en preguntas no vistas o clases raras. El corpus de adaptación
+debe excluir cualquier texto de validación que contenga señales de etiqueta. Las
+explicaciones sin etiqueta pueden participar en preentrenamiento auto-supervisado
+si se respetan las particiones.
+
+\textbf{Razones para considerarlo.} La adaptación de dominio ha mejorado ASAG en
+literatura reciente (Bonthu et al., 2024), y el vocabulario matemático contiene
+usos especializados. No se selecciona directamente como única solución porque
+añade costo y existe riesgo de sobreajuste a las 15 preguntas disponibles.
+
+\section{Nivel 4: ensamble calibrado y ranking}
+
+La salida final exige parejas. Una aproximación coherente calcula
+
+\[
+p(c,m\mid x)=p(c\mid x)\,p(m\mid c,x),
+\]
+
+aplica una máscara de compatibilidad y ordena los tres pares con mayor
+probabilidad. Para categorías sin concepto erróneo se utiliza el valor permitido
+por el formato de la competencia. La mezcla de baseline y Transformer se ajusta
+con predicciones fuera de muestra. Temperatura, Platt o regresión isotónica se
+compararán para calibrar, sin usar el conjunto de prueba.
+
+\textbf{Razones para considerarlo.} MAP@3 recompensa el orden y otorga crédito
+cuando la etiqueta correcta aparece entre las primeras posiciones. Un ensamble
+puede rescatar clases en las que el modelo lineal reconoce una expresión precisa y
+otras en las que el Transformer entiende una paráfrasis. La calibración es clave
+porque la combinación de probabilidades sin escala comparable es arbitraria.
+
+\section{Modelo no seleccionado como solución principal}
+
+Los LLM generativos por API se incluyen solo como referencia. Pueden formular una
+explicación legible y usar descripciones de etiquetas, pero su salida puede variar
+entre versiones y ejecuciones. También elevan costo y riesgo de privacidad y son
+susceptibles a instrucciones contenidas en el texto estudiantil. Si se prueban,
+se congelará un conjunto pequeño, se validará formato, se registrará el prompt y
+se impedirá que texto del estudiante modifique instrucciones del sistema.
+
+\begin{decision}[Selección final de la revisión]
+\textbf{Baseline obligatorio:} TF--IDF de palabras + caracteres con logística y
+SVM. \textbf{Modelo principal:} DeBERTa/BERT contextual multitarea.
+\textbf{Experimento avanzado:} adaptación de dominio con MathBERT o preentrenamiento
+continuado. \textbf{Salida operativa:} ensamble calibrado, restricciones
+jerárquicas y ranking top--3. \textbf{LLM:} comparación diagnóstica, no producción.
+\end{decision}
+
+% =============================================================================
+\chapter{Plan experimental propuesto}
+% =============================================================================
+
+\section{Particiones y control de fuga}
+
+Se recomienda conservar un conjunto de prueba final sin contacto durante la
+selección. Dentro del desarrollo se reportarán dos esquemas complementarios. La
+validación cruzada estratificada por etiqueta compuesta medirá el desempeño sobre
+preguntas conocidas; la validación agrupada por \codigo{QuestionId} estimará la
+transferencia a preguntas no vistas. Como solo existen quince preguntas, se
+usarán tres o cinco folds en el esquema agrupado y se documentará qué preguntas
+quedan fuera en cada iteración. La selección operativa dará prioridad al primer
+escenario, mientras que el segundo funcionará como prueba explícita de
+extrapolación.
+
+Los transformadores de texto, vocabularios, ponderaciones de clase, calibradores y
+meta-modelos deben ajustarse solo con el fold de entrenamiento. Las predicciones
+para el ensamble deben ser \emph{out-of-fold}. El texto duplicado o casi duplicado
+debe permanecer en el mismo grupo para impedir contaminación.
+
+\section{Métricas}
+
+Si $r_i$ es la posición de la primera etiqueta correcta para el ejemplo $i$, la
+precisión promedio hasta tres candidatos se expresa como
+
+\[
+\operatorname{MAP@3}=\frac{1}{N}\sum_{i=1}^{N}
+\begin{cases}
+1/r_i, & r_i\leq3,\\
+0, & r_i>3\text{ o no aparece}.
+\end{cases}
+\]
+
+MAP@3 será la métrica de selección por alinearse con el reto. Se acompañará de:
+
+\begin{itemize}
+  \item macro F1 y recall macro para visibilizar clases raras;
+  \item F1 ponderado y exactitud como contexto, nunca de forma aislada;
+  \item desempeño por \codigo{QuestionId}, categoría y concepto erróneo;
+  \item recall@3 y rango recíproco medio;
+  \item pérdida logarítmica y error de calibración esperado;
+  \item media y desviación entre semillas y folds.
+\end{itemize}
+
+\section{Secuencia de experimentos}
+
+\begin{table}[H]
+\centering
+\caption{Hoja de ruta experimental}
+\label{tab:experimentos}
+\begin{tabularx}{\textwidth}{@{}C{1.1cm}P{3.2cm}YY@{}}
+\toprule
+\textbf{Fase} & \textbf{Experimento} & \textbf{Pregunta que responde} &
+\textbf{Criterio de avance}\\
+\midrule
+0 & Dummy por frecuencia y por pregunta & ¿Qué desempeño se obtiene sin leer el
+texto? & Todo modelo real debe superarlo en MAP@3 y macro F1.\\
+1 & TF--IDF palabra/carácter + logística/SVM & ¿Cuánta señal existe en expresiones
+superficiales? & Baseline estable y errores interpretables.\\
+2 & Ablación de entradas & ¿Qué aportan opción y pregunta? & Mejoras consistentes
+en folds agrupados.\\
+3 & BERT/DeBERTa contextual & ¿La semántica contextual supera al baseline? & Mejora
+con costo y varianza aceptables.\\
+4 & Pérdida multitarea y balanceo & ¿La jerarquía ayuda a conceptos raros? & Mayor
+macro F1 sin degradar MAP@3/calibración.\\
+5 & Adaptación matemática & ¿El dominio aporta transferencia? & Ganancia en
+preguntas no vistas y clases raras.\\
+6 & Ensamble y calibración & ¿Las señales son complementarias? & Mejora fuera de
+muestra y probabilidades más confiables.\\
+7 & Robustez y revisión humana & ¿El modelo usa contenido o atajos? & Estabilidad
+ante perturbaciones inocuas y ruta de abstención.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Hiperparámetros iniciales}
+
+\begin{table}[H]
+\centering
+\caption{Espacio inicial de búsqueda, sujeto al presupuesto computacional}
+\label{tab:hiperparametros}
+\begin{tabularx}{\textwidth}{@{}P{3.6cm}YY@{}}
+\toprule
+\textbf{Componente} & \textbf{Valores iniciales} & \textbf{Observación}\\
+\midrule
+TF--IDF palabra & n-gramas (1,1), (1,2); min df 2--5; sublinear TF & No eliminar
+negaciones; revisar \emph{stopwords}.\\
+TF--IDF carácter & n-gramas (3,5), (3,6); límites de palabra y texto & Captura
+ortografía y notación parcial.\\
+Logística/SVM & $C\in\{0.1,0.5,1,2,5\}$; peso balanceado sí/no & Calibrar SVM en
+fold separado.\\
+Transformer & tasa $1$--$5\times10^{-5}$; 3--8 épocas; longitud 128--256 &
+\emph{Early stopping} por MAP@3 agrupado.\\
+Balanceo & ponderación inversa suavizada, focal $\gamma\in\{1,2\}$ & Comparar
+calibración y clases frecuentes.\\
+Multitarea & $\lambda\in\{0.25,0.5,1,2\}$ & Máscara para etiqueta no aplicable.\\
+Ensamble & $\alpha\in\{0,0.1,\ldots,1\}$ & Ajustar solo con out-of-fold.\\
+Semillas & mínimo 3 & Reportar promedio y dispersión.\\
+\bottomrule
+\end{tabularx}
+\end{table}
+
+\section{Análisis de errores y explicabilidad}
+
+Se construirá una matriz de confusión para etiquetas con soporte suficiente y una
+tabla de los pares confundidos. Para el modelo lineal se inspeccionarán n-gramas de
+mayor peso. Para el Transformer se usarán técnicas de atribución como gradientes
+integrados o eliminación de tokens, evitando interpretar pesos de atención como
+explicación causal.
+
+Cada muestra auditada incluirá pregunta, opción, explicación, etiqueta real, top--3,
+probabilidades y observación del revisor. Se priorizarán: clases minoritarias,
+predicciones confiadas e incorrectas, desacuerdos entre baseline y Transformer,
+casos que cambian al modificar una negación y ejemplos sintéticos.
+
+% =============================================================================
+\chapter{Riesgos, ética y reproducibilidad}
+% =============================================================================
+
+\section{Sesgos y cobertura}
+
+El conjunto MAP no representa automáticamente a todos los estudiantes, niveles,
+idiomas o currículos. El desempeño puede variar con ortografía, dialecto,
+competencia lingüística o formas distintas de explicar el mismo concepto. Una
+etiqueta de ``concepto erróneo'' describe una respuesta, no una identidad estable
+del estudiante. El sistema no debe usarse para decisiones disciplinarias ni para
+inferir capacidad general.
+
+\section{Incertidumbre y supervisión}
+
+Se recomienda una política de abstención. Si la probabilidad está mal calibrada,
+el margen entre los dos primeros candidatos es pequeño o la entrada queda fuera
+de distribución, el sistema debe mostrar tres sugerencias y solicitar revisión.
+La literatura de sistemas confiables favorece combinar automatización con control
+humano, en lugar de presentar la predicción como verdad definitiva (Schneider et
+al., 2023; Grévisse, 2024).
+
+\section{Privacidad y seguridad}
+
+Las explicaciones pueden contener datos personales introducidos accidentalmente.
+Antes de usar servicios externos debe existir anonimización y autorización. Los
+prompts no deben permitir que el contenido de la respuesta sustituya las
+instrucciones de clasificación. Además, las pruebas adversariales propuestas por
+Filighera et al. (2024) deben formar parte de la evaluación, no considerarse una
+tarea posterior opcional.
+
+\section{Reproducibilidad}
+
+Todo experimento debe registrar versión del conjunto, hash de particiones,
+semillas, librerías, hiperparámetros, hardware y tiempo. Se conservarán matrices de
+resultados por fold y no solo el mejor número. El repositorio debe separar datos,
+notebooks, código fuente, modelos y reportes; los archivos grandes o con licencia
+restrictiva no deben subirse sin verificación.
+
+% =============================================================================
+\chapter{Conclusiones}
+% =============================================================================
+
+La revisión bibliográfica permite responder las dos actividades solicitadas. En
+problemas similares se han empleado reglas y similitud, TF--IDF con regresión o
+SVM, ensambles de características, LSTM, Transformers ajustados, adaptación de
+dominio y LLM mediante prompting. No existe un ganador universal: el resultado
+depende de si las preguntas son vistas, del tamaño del corpus, del dominio, de la
+distribución de clases y del nivel de supervisión humana.
+
+Para MAP, la evidencia favorece un enfoque contextual e híbrido. El baseline
+TF--IDF proporciona rapidez, transparencia y control. El Transformer incorpora
+pregunta, opción y explicación para capturar semántica. La formulación multitarea
+respeta la estructura entre categoría y error conceptual. La adaptación de
+dominio es un experimento avanzado justificado por el lenguaje matemático, y el
+ensamble calibrado transforma las probabilidades en el ranking top--3 exigido.
+
+La contribución más importante del diseño será una evaluación honesta. Comparar
+particiones estratificada y agrupada, reportar macro F1 y MAP@3, analizar clases
+raras, probar perturbaciones y documentar incertidumbre evitará que una puntuación
+elevada por memorización se confunda con comprensión. Bajo estas condiciones, el
+sistema puede apoyar al docente a localizar patrones de razonamiento y priorizar
+retroalimentación, sin reemplazar su juicio.
+
+\begin{decision}[Recomendación de implementación]
+Iniciar con el baseline y las ablaciones de contexto; ajustar después un
+DeBERTa/BERT multitarea; probar adaptación matemática solo si mejora de forma
+consistente ambos escenarios de validación; y cerrar con calibración, ensamble y
+auditoría humana. Esta secuencia
+maximiza el aprendizaje experimental por unidad de costo y mantiene una referencia
+interpretable en cada etapa.
+\end{decision}
+
+% =============================================================================
+\backmatter
+\chapter*{Referencias}
+\addcontentsline{toc}{chapter}{Referencias}
+\markboth{REFERENCIAS}{REFERENCIAS}
+
+\small
+\begin{list}{}{%
+  \setlength{\leftmargin}{1.27cm}%
+  \setlength{\itemindent}{-1.27cm}%
+  \setlength{\itemsep}{0.9em}}
+
+\item Bonthu, S., Sree, S. R., \& Krishna Prasad, M. H. M. (2023). Improving the
+performance of automatic short answer grading using transfer learning and
+augmentation. \emph{Engineering Applications of Artificial Intelligence, 123},
+106292. \url{https://doi.org/10.1016/j.engappai.2023.106292}
+
+\item Bonthu, S., Sree, S. R., \& Krishna Prasad, M. H. M. (2024). Framework for
+automation of short answer grading based on domain-specific pre-training.
+\emph{Engineering Applications of Artificial Intelligence, 137}, 109163.
+\url{https://doi.org/10.1016/j.engappai.2024.109163}
+
+\item Burrows, S., Gurevych, I., \& Stein, B. (2015). The eras and trends of
+automatic short answer grading. \emph{International Journal of Artificial
+Intelligence in Education, 25}(1), 60--117.
+\url{https://doi.org/10.1007/s40593-014-0026-8}
+
+\item del Gobbo, E., Guarino, A., Cafarelli, B., \& Grilli, L. (2023). GradeAid: A
+framework for automatic short answers grading in educational contexts---Design,
+implementation and evaluation. \emph{Knowledge and Information Systems, 65},
+4295--4334. \url{https://doi.org/10.1007/s10115-023-01892-9}
+
+\item Devlin, J., Chang, M.-W., Lee, K., \& Toutanova, K. (2019). BERT:
+Pre-training of deep bidirectional transformers for language understanding. In
+\emph{Proceedings of the 2019 Conference of the North American Chapter of the
+Association for Computational Linguistics: Human Language Technologies} (Vol. 1,
+pp. 4171--4186). Association for Computational Linguistics.
+\url{https://doi.org/10.18653/v1/N19-1423}
+
+\item Filighera, A., Ochs, S., Steuer, T., \& Tregel, T. (2024). Cheating automatic
+short answer grading with the adversarial usage of adjectives and adverbs.
+\emph{International Journal of Artificial Intelligence in Education, 34},
+616--646. \url{https://doi.org/10.1007/s40593-023-00361-2}
+
+\item Grévisse, C. (2024). LLM-based automatic short answer grading in
+undergraduate medical education. \emph{BMC Medical Education, 24}, 1060.
+\url{https://doi.org/10.1186/s12909-024-06026-5}
+
+\item He, P., Liu, X., Gao, J., \& Chen, W. (2021). DeBERTa: Decoding-enhanced
+BERT with disentangled attention. In \emph{International Conference on Learning
+Representations}. \url{https://openreview.net/forum?id=XPZIaotutsD}
+
+\item Kaggle. (2025). \emph{MAP---Charting student math misunderstandings}
+[Data science competition].
+\url{https://www.kaggle.com/competitions/map-charting-student-math-misunderstandings/overview}
+
+\item Morley, F., Walland, E., \& Vidal Rodeiro, C. L. (2026). Auto-marking short
+answer questions in science: The foundational years of transformer-based models
+from BERT to GPT-4. \emph{International Journal of Artificial Intelligence in
+Education, 36}(1--2), 100005.
+\url{https://doi.org/10.1016/j.ijaied.2026.100005}
+
+\item Otero, N., Druga, S., \& Lan, A. (2025). A benchmark for math
+misconceptions: Bridging gaps in middle school algebra with AI-supported
+instruction. \emph{Discover Education, 4}, 277.
+\url{https://doi.org/10.1007/s44217-025-00742-w}
+
+\item Padó, U., Eryilmaz, Y., \& Kirschner, L. (2024). Short-answer grading for
+German: Addressing the challenges. \emph{International Journal of Artificial
+Intelligence in Education, 34}(4), 1321--1352.
+\url{https://doi.org/10.1007/s40593-023-00383-w}
+
+\item Rittle-Johnson, B., Adler, R., Durkin, K., Burleigh, L., King, J., \&
+Crossley, S. (2025). Detecting math misconceptions: An AI benchmark dataset. In
+\emph{Proceedings of the 1st Workshop on Advancing Artificial Intelligence through
+Theory of Mind} (pp. 20--24). Association for Computational Linguistics.
+\url{https://aclanthology.org/2025.aimecon-wip.3/}
+
+\item Rushton, S. J. (2018). Teaching and learning mathematics through error
+analysis. \emph{Fields Mathematics Education Journal, 3}, Article 4.
+\url{https://doi.org/10.1186/s40928-018-0009-y}
+
+\item Sahu, A., \& Bhowmick, P. K. (2020). Feature engineering and ensemble-based
+approach for improving automatic short-answer grading performance. \emph{IEEE
+Transactions on Learning Technologies, 13}(1), 77--90.
+\url{https://doi.org/10.1109/TLT.2019.2897997}
+
+\item Schneider, J., Richner, R., \& Riser, M. (2023). Towards trustworthy
+AutoGrading of short, multi-lingual, multi-type answers. \emph{International
+Journal of Artificial Intelligence in Education, 33}(1), 88--118.
+\url{https://doi.org/10.1007/s40593-022-00289-z}
+
+\item Shen, J. T., Yamashita, M., Prihar, E., Heffernan, N. T., Wu, X., Lee, D., \&
+Wang, D. (2021). MathBERT: A pre-trained language model for general NLP tasks in
+mathematics education. \emph{arXiv}.
+\url{https://doi.org/10.48550/arXiv.2106.07340}
+
+\item Wang, H., Haudek, K. C., Manzanares, A. D., Romulo, C. L., Royse, E. A., \&
+Azzarello, C. B. (2025). Extending a pretrained language model (BERT) using an
+ontological perspective to classify students' scientific expertise level from
+written responses. \emph{Disciplinary and Interdisciplinary Science Education
+Research, 7}, 26. \url{https://doi.org/10.1186/s43031-025-00149-5}
+
+\item Zhang, L., Huang, Y., Yang, X., Yu, S., \& Zhuang, F. (2022). An automatic
+short-answer grading model for semi-open-ended questions. \emph{Interactive
+Learning Environments, 30}(1), 177--190.
+\url{https://doi.org/10.1080/10494820.2019.1648300}
+
+\item Zhang, Y., Lin, C., \& Chi, M. (2020). Going deeper: Automatic short-answer
+grading by combining student and question models. \emph{User Modeling and
+User-Adapted Interaction, 30}(1), 51--80.
+\url{https://doi.org/10.1007/s11257-019-09251-6}
+
+\item Zhu, X., Wu, H., \& Zhang, L. (2022). Automatic short-answer grading via
+BERT-based deep neural networks. \emph{IEEE Transactions on Learning Technologies,
+15}(3), 364--375. \url{https://doi.org/10.1109/TLT.2022.3175537}
+
+\end{list}
+\normalsize
+
+\chapter*{Apéndice A. Correspondencia entre evidencia y decisión}
+\addcontentsline{toc}{chapter}{Apéndice A. Correspondencia entre evidencia y decisión}
+\markboth{APÉNDICE A}{APÉNDICE A}
+
+\begin{tabularx}{\textwidth}{@{}P{4.0cm}YY@{}}
+\toprule
+\textbf{Decisión} & \textbf{Evidencia principal} & \textbf{Comprobación local}\\
+\midrule
+Baseline TF--IDF/SVM & Burrows et al. (2015); del Gobbo et al. (2023) & Validación
+doble, pesos de n-gramas y costo.\\
+Entrada con pregunta y opción & Zhang et al. (2020); Morley et al. (2026) &
+Ablación de tres configuraciones de entrada.\\
+Transformer contextual & Zhu et al. (2022); Morley et al. (2026) & MAP@3 y macro F1
+contra baseline, mismas particiones.\\
+Adaptación de dominio & Bonthu et al. (2024); Wang et al. (2025) & Ganancia en
+preguntas no vistas y clases raras.\\
+Ensamble híbrido & Sahu y Bhowmick (2020); del Gobbo et al. (2023) & Mezcla con
+predicciones out-of-fold y calibración.\\
+Validación por pregunta & Padó et al. (2024) & GroupKFold por \codigo{QuestionId}.\\
+Pruebas adversariales & Filighera et al. (2024) & Perturbaciones inocuas y cambios
+semánticos mínimos.\\
+Supervisión humana & Schneider et al. (2023); Grévisse (2024) & Umbral de abstención
+y auditoría de alta incertidumbre.\\
+\bottomrule
+\end{tabularx}
+
+\chapter*{Apéndice B. Lista de verificación antes de entrenar}
+\addcontentsline{toc}{chapter}{Apéndice B. Lista de verificación antes de entrenar}
+\markboth{APÉNDICE B}{APÉNDICE B}
+
+\begin{enumerate}
+  \item Congelar ambas particiones y verificar que ningún duplicado cruce entre
+  entrenamiento y validación; en el esquema agrupado tampoco debe cruzar una
+  pregunta.
+  \item Confirmar la semántica exacta de categorías, valores nulos estructurales y
+  formato de pares permitido.
+  \item Construir dummy y baseline antes de ajustar Transformers.
+  \item Conservar números, signos, operadores y negaciones en preprocesamiento.
+  \item Ajustar vectorizador, ponderaciones y calibrador dentro de cada fold.
+  \item Reportar MAP@3, macro F1, resultados por pregunta/clase y variación entre
+  semillas.
+  \item Auditar ejemplos confiados e incorrectos, clases raras y desacuerdos entre
+  modelos.
+  \item Documentar licencias, versiones, semillas, hardware, tiempos y huella de
+  datos.
+  \item Definir un umbral de abstención y la intervención humana esperada.
+  \item No interpretar las puntuaciones de la matriz cualitativa como resultados
+  empíricos.
+\end{enumerate}
+
+\vfill
+\begin{center}
+\color{GrisTexto}\sffamily\small
+Documento preparado para el Proyecto 2 de CC3084 -- Data Science.\\
+Universidad del Valle de Guatemala, 2026.
+\end{center}
+
+\end{document}

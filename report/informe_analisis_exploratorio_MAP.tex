@@ -47,7 +47,7 @@
   citecolor=TurquesaOscuro,
   urlcolor=AzulMedio,
   pdftitle={Proyecto 2 - MAP: Charting Student Math Misunderstandings},
-  pdfauthor={Jorge Gabriel Palacios Sales; Pablo Daniel Barillas Moreno; Roberto Emiliano Otoniel Camposeco Torres},
+  pdfauthor={Jorge Gabriel Palacios Sales; Pablo Daniel Barillas Moreno; Roberto Emiliano Otoniel Camposeco Torres; Abby Sofia Donis Agreda},
   pdfsubject={Análisis exploratorio de explicaciones matemáticas estudiantiles mediante NLP}
 }
 
@@ -159,7 +159,8 @@ Docente: & Lynette García Pérez\\[1.5mm]
 Grupo y sección: & Grupo 1, sección 10\\[1.5mm]
 Integrantes: & Jorge Gabriel Palacios Sales\\
 & Pablo Daniel Barillas Moreno\\
-& Roberto Emiliano Otoniel Camposeco Torres\\[1.5mm]
+& Roberto Emiliano Otoniel Camposeco Torres\\
+& Abby Sofia Donis Agreda\\[1.5mm]
 Tema: & Procesamiento del Lenguaje Natural (NLP)\\
 \end{tabularx}
 \vspace{3mm}
@@ -215,8 +216,8 @@ se priorizó la evidencia numérica y la discrepancia se documentó como
 limitación de reproducibilidad.
 \end{advertencia}
 
-\chapter*{Resumen ejecutivo}
-\addcontentsline{toc}{chapter}{Resumen ejecutivo}
+\chapter*{Resumen}
+\addcontentsline{toc}{chapter}{Resumen}
 
 Se analizaron 36,696 respuestas estudiantiles distribuidas entre 15 preguntas
 matemáticas. Cada registro contiene el enunciado, la opción elegida y una
@@ -913,7 +914,8 @@ características que describen forma y contenido de la explicación.
 \codigo{n\_chars} & Número de caracteres de la explicación normalizada.\\
 \codigo{n\_words} & Número de palabras o tokens separados por espacios.\\
 \codigo{n\_unique\_w} & Número de palabras distintas.\\
-\codigo{avg\_word\_len} & Longitud media de palabra.\\
+\codigo{avg\_token\_len} & Longitud media de los tokens separados por espacios;
+incluye signos adheridos al token.\\
 \codigo{lex\_diversity} & Cociente entre palabras distintas y palabras totales.\\
 \codigo{n\_digits} & Cantidad de dígitos.\\
 \codigo{digit\_ratio} & Proporción de caracteres que son dígitos.\\
@@ -939,12 +941,12 @@ $<$, $>$ y \%.\\
 n\_chars & 69.78 & 38.44 & 1.00 & 43.00 & 60.00 & 86.00 & 586.00 & 43.00 & 0.55 & 1.89\\
 n\_words & 15.36 & 8.12 & 1.00 & 10.00 & 13.00 & 19.00 & 177.00 & 9.00 & 0.53 & 1.87\\
 n\_unique\_w & 13.51 & 6.22 & 1.00 & 9.00 & 12.00 & 17.00 & 125.00 & 8.00 & 0.46 & 1.56\\
-avg\_word\_len & 4.56 & 0.67 & 1.00 & 4.12 & 4.54 & 4.96 & 15.67 & 0.84 & 0.15 & 0.72\\
+avg\_token\_len & 3.64 & 0.68 & 1.00 & 3.20 & 3.62 & 4.00 & 14.83 & 0.80 & 0.19 & 0.84\\
 lex\_diversity & 0.91 & 0.09 & 0.39 & 0.85 & 0.92 & 1.00 & 1.00 & 0.15 & 0.10 & -0.58\\
 n\_digits & 4.72 & 4.61 & 0.00 & 1.00 & 4.00 & 7.00 & 101.00 & 6.00 & 0.98 & 1.63\\
 digit\_ratio & 0.07 & 0.07 & 0.00 & 0.02 & 0.06 & 0.11 & 0.78 & 0.09 & 0.96 & 1.34\\
 n\_math\_sym & 1.01 & 1.66 & 0.00 & 0.00 & 0.00 & 2.00 & 50.00 & 2.00 & 1.64 & 2.92\\
-n\_sentences & 1.59 & 1.39 & 1.00 & 1.00 & 1.00 & 2.00 & 212.00 & 1.00 & 0.88 & 95.21\\
+n\_sentences & 1.11 & 0.41 & 1.00 & 1.00 & 1.00 & 1.00 & 11.00 & 0.00 & 0.37 & 5.23\\
 \bottomrule
 \end{tabular}}
 \end{table}
@@ -957,9 +959,10 @@ cortas y las medidas de longitud presentan cola derecha.}
 La mediana es de 13 palabras y 60 caracteres, frente a máximos de 177 palabras
 y 586 caracteres. La diferencia entre media y mediana, junto con asimetrías de
 1.89 y 1.87, confirma cola derecha. La mediana de símbolos matemáticos es cero,
-aunque una minoría concentra muchos. El máximo de 212 en
-\codigo{n\_sentences} sugiere que esta regla de conteo puede reaccionar a
-puntuación o secuencias atípicas y debe revisarse antes de modelar.
+aunque una minoría concentra muchos. La aproximación revisada de
+\codigo{n\_sentences} separa únicamente puntuación terminal seguida de espacio o
+fin de texto: su máximo es 11 y su mediana es 1. Sigue siendo una variable
+heurística, por lo que debe interpretarse con cautela.
 
 \section{Longitud y tipo de razonamiento}
 
@@ -1011,12 +1014,12 @@ extremos:
 n\_chars & -21.50 & 150.50 & 1,556 & 4.24\%\\
 n\_words & -3.50 & 32.50 & 1,499 & 4.08\%\\
 n\_unique\_w & -3.00 & 29.00 & 815 & 2.22\%\\
-avg\_word\_len & 2.86 & 6.21 & 596 & 1.62\%\\
+avg\_token\_len & 2.00 & 5.20 & 851 & 2.32\%\\
 lex\_diversity & 0.62 & 1.23 & 12 & 0.03\%\\
 n\_digits & -8.00 & 16.00 & 742 & 2.02\%\\
 digit\_ratio & -0.12 & 0.25 & 831 & 2.26\%\\
 n\_math\_sym & -3.00 & 5.00 & 882 & 2.40\%\\
-n\_sentences & -0.50 & 3.50 & 987 & 2.69\%\\
+n\_sentences & 1.00 & 1.00 & 3,097 & 8.44\%\\
 \bottomrule
 \end{tabular}
 \end{table}

@@ -28,7 +28,7 @@
     <div class="eyebrow">Proyecto 2 · Análisis exploratorio</div><div class="rule"></div>
     <h1>Charting Student Math Misunderstandings</h1>
     <p class="subtitle">Exploración de razonamientos matemáticos abiertos para reconocer respuestas correctas, errores y concepciones erróneas mediante Procesamiento del Lenguaje Natural.</p>
-    <div class="meta"><b>CC3084 — Data Science · Sección 10</b><br>Daniel Barillas · Mario Gómez · Marco Romero<br>Universidad del Valle de Guatemala · 2026</div>
+    <div class="meta"><b>CC3084 — Data Science · Sección 10</b><br>Jorge Gabriel Palacios Sales · Pablo Daniel Barillas Moreno<br>Roberto Emiliano Otoniel Camposeco Torres · Abby Sofia Donis Agreda<br>Universidad del Valle de Guatemala · 2026</div>
   </section>
 
   <section class="slide">
@@ -75,16 +75,16 @@
   </section>
 
   <section class="slide">
-    <div class="eyebrow">Datos locales</div><h2>Perfil del archivo analizado, sin reejecutar el notebook</h2>
+    <div class="eyebrow">Datos locales</div><h2>Perfil verificado del archivo analizado</h2>
     <div class="grid g4">
       <article class="card top"><div class="metric">36,696</div><p>observaciones</p></article>
       <article class="card top gold"><div class="metric gold">15</div><p>preguntas únicas</p></article>
-      <article class="card top green"><div class="metric green">35</div><p>opciones de respuesta</p></article>
-      <article class="card top red"><div class="metric">65</div><p>concepciones erróneas</p></article>
+      <article class="card top green"><div class="metric green">49</div><p>opciones distintas</p></article>
+      <article class="card top red"><div class="metric">35 / 65</div><p>concepciones / etiquetas compuestas</p></article>
     </div>
     <table class="matrix" style="margin-top:2vh"><tr><th>Identificador</th><th>Contexto</th><th>Respuesta</th><th>Texto</th><th>Etiquetas</th></tr><tr><td>row_id</td><td>QuestionId</td><td>MC_Answer</td><td>StudentExplanation</td><td>Category<br>Misconception</td></tr></table>
     <div class="callout">Unidad de análisis: una explicación de estudiante asociada a una pregunta y a la opción que eligió.</div>
-    <p class="cite">Fuente: resultados persistidos en <i>MAP_Student_Math_Misunderstandings.ipynb</i>.</p>
+    <p class="cite">Fuente: resultados reproducidos en <i>01_analisis_exploratorio.ipynb</i>.</p>
   </section>
 
   <section class="slide">
@@ -99,7 +99,7 @@
   <section class="slide">
     <div class="eyebrow">Limpieza y preprocesamiento</div><h2>El 73.1% de ausencia en “Misconception” es principalmente estructural</h2>
     <div class="grid g3">
-      <article class="card top"><div class="metric">26,820</div><h3>Valores ausentes</h3><p>No equivalen automáticamente a mala calidad: muchas categorías no requieren una concepción errónea.</p></article>
+      <article class="card top"><div class="metric">26,836</div><h3>Valores ausentes</h3><p>No equivalen automáticamente a mala calidad: muchas categorías no requieren una concepción errónea.</p></article>
       <article class="card top gold"><h3>Conservar</h3><p>Negaciones, operadores, fracciones, porcentajes, números y expresiones como “times” o “divide”.</p></article>
       <article class="card top green"><h3>Normalizar con cuidado</h3><p>Espacios, variantes tipográficas y campos de etiqueta, manteniendo intacta la semántica matemática.</p></article>
     </div>
@@ -113,12 +113,12 @@
 
   <section class="slide">
     <div class="eyebrow">Calidad textual</div><h2>Las explicaciones son breves, heterogéneas y con señales matemáticas</h2>
-    <div class="split reverse"><div class="figure"><img src="../report/assets/distribuciones_variables_texto.png" alt="Distribuciones de palabras, caracteres y calidad textual"></div><div><ul><li>Mediana aproximada: 15 palabras.</li><li>Existen respuestas vacías o mínimas.</li><li>La ortografía y la puntuación varían.</li><li>El largo no determina por sí solo la corrección.</li></ul><div class="callout">La representación debe combinar texto, números, opción elegida y contexto de la pregunta.</div></div></div>
+    <div class="split reverse"><div class="figure"><img src="../report/assets/distribuciones_variables_texto.png" alt="Distribuciones de palabras, caracteres y calidad textual"></div><div><ul><li>Mediana: 13 palabras; media: 15.36.</li><li>No hay explicaciones vacías; 30 tienen una o dos palabras.</li><li>La ortografía y la puntuación varían.</li><li>El largo no determina por sí solo la corrección.</li></ul><div class="callout">La representación debe combinar texto, números, opción elegida y contexto de la pregunta.</div></div></div>
   </section>
 
   <section class="slide">
     <div class="eyebrow">Outliers</div><h2>Los textos largos son casos informativos, no errores automáticos</h2>
-    <div class="split reverse"><div class="figure"><img src="../report/assets/longitud_por_categoria.png" alt="Longitud de explicaciones por categoría"></div><div><p class="lead">Los diagramas de caja muestran dispersión y valores extremos en todas las categorías.</p><ul><li>Revisar manualmente vacíos y textos anómalos.</li><li>Evitar truncamiento agresivo.</li><li>Usar longitud como rasgo auxiliar, no como sustituto del significado.</li></ul></div></div>
+    <div class="split reverse"><div class="figure"><img src="../report/assets/longitud_por_categoria.png" alt="Longitud de explicaciones por categoría"></div><div><p class="lead">Los diagramas de caja muestran dispersión y valores extremos en todas las categorías.</p><ul><li>Revisar manualmente textos mínimos y anómalos.</li><li>Evitar truncamiento agresivo.</li><li>Usar longitud como rasgo auxiliar, no como sustituto del significado.</li></ul></div></div>
   </section>
 
   <section class="slide">
@@ -128,7 +128,7 @@
 
   <section class="slide">
     <div class="eyebrow">Dependencia contextual</div><h2>La distribución cambia sustancialmente entre preguntas</h2>
-    <div class="split reverse"><div class="figure"><img src="../report/assets/cruces_por_pregunta.png" alt="Cruces de categorías y concepciones por pregunta"></div><div><p class="lead">Pregunta, opción y lenguaje están entrelazados.</p><ul><li>Un split aleatorio puede filtrar patrones específicos.</li><li>La evaluación más exigente deja preguntas completas fuera.</li><li>Las conclusiones deben reportarse por pregunta.</li></ul><span class="tag">GroupKFold</span><span class="tag">leave-one-question-out</span><span class="tag">MAP@3</span></div></div>
+    <div class="split reverse"><div class="figure"><img src="../report/assets/cruces_por_pregunta.png" alt="Cruces de categorías y concepciones por pregunta"></div><div><p class="lead">Pregunta, opción y lenguaje están entrelazados.</p><ul><li>Un split aleatorio puede filtrar patrones específicos.</li><li>GroupKFold deja numerosas etiquetas sin ejemplos de entrenamiento.</li><li>Se deben reportar ambos escenarios y resultados por pregunta.</li></ul><span class="tag">StratifiedKFold</span><span class="tag">GroupKFold</span><span class="tag">MAP@3</span></div></div>
   </section>
 
   <section class="slide">
@@ -145,7 +145,7 @@
 
   <section class="slide">
     <div class="eyebrow">Hallazgos y decisiones</div><h2>Cinco conclusiones accionables del análisis</h2>
-    <div class="grid g3"><article class="card top"><h3>1 · Jerarquía</h3><p>Category debe preceder a Misconception.</p></article><article class="card top gold"><h3>2 · Contexto</h3><p>La pregunta no es un identificador neutral.</p></article><article class="card top green"><h3>3 · Desbalance</h3><p>Evaluar más allá de accuracy.</p></article><article class="card top red"><h3>4 · Texto</h3><p>Preservar notación, números y negaciones.</p></article><article class="card top"><h3>5 · Prudencia</h3><p>El modelo apoya la revisión docente.</p></article><article class="card top gold"><h3>Siguiente paso</h3><p>Baseline TF-IDF y validación por pregunta.</p></article></div>
+    <div class="grid g3"><article class="card top"><h3>1 · Jerarquía</h3><p>Category debe preceder a Misconception.</p></article><article class="card top gold"><h3>2 · Contexto</h3><p>La pregunta no es un identificador neutral.</p></article><article class="card top green"><h3>3 · Desbalance</h3><p>Evaluar más allá de accuracy.</p></article><article class="card top red"><h3>4 · Texto</h3><p>Preservar notación, números y negaciones.</p></article><article class="card top"><h3>5 · Prudencia</h3><p>El modelo apoya la revisión docente.</p></article><article class="card top gold"><h3>Siguiente paso</h3><p>Baseline TF-IDF y validación dual.</p></article></div>
     <div class="callout">La mejor explicación del dataset no es “detectar palabras equivocadas”, sino modelar la relación entre contexto, elección y razonamiento.</div>
   </section>
 
@@ -155,9 +155,11 @@
 ├── data/          dataset local (no versionado)
 ├── instructions/  guía del proyecto
 ├── notebooks/     análisis exploratorio
-├── report/        informe y presentación
+├── report/        informes y figuras
+├── presentation/  HTML, PowerPoint y PDF
+├── file/          documento del repositorio
 ├── README.md
-└── LICENSE</div><p style="margin-top:1rem"><a href="https://github.com/DanielBarillasM/Proyecto-2_Grupo-1_DS_Sec-10" target="_blank">github.com/DanielBarillasM/Proyecto-2_Grupo-1_DS_Sec-10</a></p></div><div style="text-align:center"><img class="qr" src="../report/assets/repo_qr.png" alt="Código QR del repositorio"><p class="small">Escanee para abrir el repositorio</p><div class="callout" style="text-align:left"><b>Pendiente formal:</b> corregir la ubicación local de los datos y confirmar si el HTML puede sustituir el PowerPoint solicitado.</div></div></div>
+└── requirements.txt</div><p style="margin-top:1rem"><a href="https://github.com/DanielBarillasM/Proyecto-2_Grupo-1_DS_Sec-10" target="_blank">github.com/DanielBarillasM/Proyecto-2_Grupo-1_DS_Sec-10</a></p></div><div style="text-align:center"><img class="qr" src="../report/assets/repo_qr.png" alt="Código QR del repositorio"><p class="small">Escanee para abrir el repositorio</p><div class="callout" style="text-align:left"><b>Estado verificado:</b> ruta de datos flexible, dependencias fijadas, notebook ejecutado sin errores y PowerPoint editable incluido.</div></div></div>
   </section>
 
   <section class="slide">

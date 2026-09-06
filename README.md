@@ -15,7 +15,9 @@ Universidad del Valle de Guatemala · 2026
 
 [Informe](report/informe_analisis_exploratorio_MAP.pdf) ·
 [Notebook](notebooks/01_analisis_exploratorio.ipynb) ·
-[Presentación](presentation/presentacion_MAP.html) ·
+[Presentación HTML](presentation/presentacion_MAP.html) ·
+[PowerPoint](presentation/presentacion_MAP.pptx) ·
+[Revisión bibliográfica](report/revision_bibliografica_algoritmos_MAP.pdf) ·
 [Documento del repositorio](file/Presentacion_Repositorio_MAP.pdf)
 
 </div>
@@ -101,12 +103,12 @@ Los datos pertenecen a la competencia de Kaggle [MAP — Charting Student Math M
 
 ### Perfil del conjunto analizado
 
-| Observaciones | Preguntas | Opciones | Concepciones erróneas |
-|:---:|:---:|:---:|:---:|
-| **36,696** | **15** | **35** | **65** |
+| Observaciones | Preguntas | Opciones distintas | Concepciones erróneas | Etiquetas compuestas |
+|:---:|:---:|:---:|:---:|:---:|
+| **36,696** | **15** | **49** | **35** | **65** |
 
 > [!NOTE]
-> Los CSV no se versionan en Git. Deben descargarse desde Kaggle y ubicarse en `data/raw/` para que las rutas del notebook funcionen tanto desde la raíz como desde `notebooks/`.
+> Los CSV no se versionan en Git. El notebook localiza automáticamente los archivos en `data/` o `data/raw/`, tanto si se inicia desde la raíz como desde `notebooks/`.
 
 ## Resultados principales
 
@@ -120,7 +122,7 @@ Los datos pertenecen a la competencia de Kaggle [MAP — Charting Student Math M
 
 ### 2. La ausencia de `Misconception` es principalmente estructural
 
-Se encontraron **26,820 valores ausentes**, equivalentes a **73.1%** del conjunto. Esto no implica automáticamente mala calidad: en numerosas observaciones la concepción errónea no aplica porque la categoría describe un razonamiento correcto.
+Se encontraron **26,836 valores ausentes**, equivalentes a **73.1%** del conjunto. Esto no implica automáticamente mala calidad: en numerosas observaciones la concepción errónea no aplica porque la categoría describe un razonamiento correcto.
 
 **Decisión:** no imputar esta variable con la moda. Debe tratarse como una salida condicional o jerárquica.
 
@@ -134,8 +136,8 @@ Pocas etiquetas concentran una gran cantidad de ejemplos y muchas concepciones a
 
 ### 4. Las explicaciones son breves y heterogéneas
 
-- La mediana se aproxima a **15 palabras**.
-- Existen respuestas vacías, mínimas y valores extremos de longitud.
+- La mediana es de **13 palabras** y la media de **15.36**.
+- No hay explicaciones vacías; existen 30 respuestas mínimas de una o dos palabras y valores extremos de longitud.
 - La ortografía, puntuación y uso de mayúsculas son variables.
 - Números, negaciones, operadores y expresiones matemáticas aportan señal y no deben eliminarse indiscriminadamente.
 - Parte del ruido del benchmark fue introducida sintéticamente, por lo que no todo error ortográfico representa conducta natural del estudiante.
@@ -152,7 +154,7 @@ La distribución de categorías y concepciones cambia entre preguntas. Un *split
   <img src="report/assets/cruces_por_pregunta.png" alt="Cruces de etiquetas por pregunta" width="820">
 </p>
 
-**Recomendación:** comparar una partición estratificada con `GroupKFold` o *leave-one-question-out*, utilizando `QuestionId` como grupo.
+**Recomendación:** reportar por separado una partición estratificada —preguntas conocidas— y `GroupKFold` o *leave-one-question-out* —transferencia a preguntas nuevas—. Ninguna debe interpretarse aisladamente, porque 32 de las 35 concepciones aparecen en una sola pregunta.
 
 ### Síntesis de decisiones
 
@@ -211,25 +213,32 @@ Detección → verificación → revisión docente
 ```text
 Proyecto-2_Grupo-1_DS_Sec-10/
 ├── data/                         # Datos locales; ignorados por Git
-│   └── raw/                      # Ubicación esperada por el notebook
-│       ├── train.csv
-│       ├── test.csv
-│       └── sample_submission.csv
+│   ├── train.csv
+│   ├── test.csv
+│   └── sample_submission.csv
 ├── file/
 │   ├── Presentacion_Repositorio_MAP.docx
 │   └── Presentacion_Repositorio_MAP.pdf
 ├── instructions/
 │   └── Proyecto 2. Análisis Exploratorio. 2026.pdf
 ├── notebooks/
-│   └── 01_analisis_exploratorio.ipynb
+│   ├── 01_analisis_exploratorio.ipynb
+│   └── exportar_figuras.py
 ├── presentation/
-│   └── presentacion_MAP.html
+│   ├── presentacion_MAP.html
+│   ├── presentacion_MAP.pptx
+│   ├── presentacion_MAP.pdf
+│   └── generar_presentacion.py
 ├── report/
 │   ├── assets/                   # Figuras extraídas del notebook
 │   ├── informe_analisis_exploratorio_MAP.tex
-│   └── informe_analisis_exploratorio_MAP.pdf
+│   ├── informe_analisis_exploratorio_MAP.pdf
+│   ├── revision_bibliografica_algoritmos_MAP.tex
+│   └── revision_bibliografica_algoritmos_MAP.pdf
 ├── .gitignore
 ├── LICENSE
+├── requirements.txt
+├── validate_project.py
 └── README.md
 ```
 
@@ -262,7 +271,7 @@ source .venv/bin/activate
 
 ```bash
 python -m pip install --upgrade pip
-pip install pandas numpy matplotlib seaborn scikit-learn jupyterlab kaggle
+pip install -r requirements.txt
 ```
 
 ### 4. Descargar los datos
@@ -270,31 +279,31 @@ pip install pandas numpy matplotlib seaborn scikit-learn jupyterlab kaggle
 Después de configurar las credenciales de la API de Kaggle y aceptar las reglas de la competencia:
 
 ```bash
-mkdir -p data/raw
+mkdir -p data
 kaggle competitions download \
   -c map-charting-student-math-misunderstandings \
-  -p data/raw
+  -p data
 python -m zipfile -e \
-  data/raw/map-charting-student-math-misunderstandings.zip \
-  data/raw
+  data/map-charting-student-math-misunderstandings.zip \
+  data
 ```
 
 En PowerShell puede crear la carpeta con:
 
 ```powershell
-New-Item -ItemType Directory -Force data/raw
+New-Item -ItemType Directory -Force data
 ```
 
 Al terminar, compruebe esta estructura:
 
 ```text
-data/raw/train.csv
-data/raw/test.csv
-data/raw/sample_submission.csv
+data/train.csv
+data/test.csv
+data/sample_submission.csv
 ```
 
-> [!WARNING]
-> En algunas copias locales los CSV están directamente en `data/`. Cópielos o muévalos a `data/raw/` antes de ejecutar el notebook, o ajuste la constante `DATA` de la celda de carga.
+> [!NOTE]
+> También se admite la estructura `data/raw/`; la celda de carga informa las rutas revisadas si no encuentra los archivos.
 
 ### 5. Abrir el notebook
 
@@ -302,7 +311,11 @@ data/raw/sample_submission.csv
 jupyter lab notebooks/01_analisis_exploratorio.ipynb
 ```
 
-Ejecute las celdas en orden únicamente si necesita reproducir el análisis. El notebook versionado ya contiene salidas y figuras persistidas.
+Ejecute las celdas en orden únicamente si necesita reproducir el análisis. El notebook versionado ya contiene salidas verificadas: sus **26 celdas de código** se ejecutaron secuencialmente y sin errores. Para actualizar los activos después de una ejecución:
+
+```bash
+python notebooks/exportar_figuras.py
+```
 
 ### 6. Compilar el informe LaTeX — opcional
 
@@ -311,6 +324,7 @@ Desde la carpeta `report/`, con una distribución de LaTeX instalada:
 ```bash
 cd report
 latexmk -pdf -interaction=nonstopmode -halt-on-error informe_analisis_exploratorio_MAP.tex
+latexmk -pdf -interaction=nonstopmode -halt-on-error revision_bibliografica_algoritmos_MAP.tex
 ```
 
 Para limpiar archivos auxiliares sin eliminar el PDF:
@@ -319,7 +333,7 @@ Para limpiar archivos auxiliares sin eliminar el PDF:
 latexmk -c informe_analisis_exploratorio_MAP.tex
 ```
 
-### 7. Abrir la presentación
+### 7. Abrir o regenerar la presentación
 
 Abra [`presentation/presentacion_MAP.html`](presentation/presentacion_MAP.html) en un navegador moderno. Sus imágenes se cargan desde `report/assets/` mediante rutas relativas.
 
@@ -331,6 +345,18 @@ Controles disponibles:
 - `F`: activar pantalla completa.
 - Impresión del navegador: exportar las diapositivas a PDF.
 
+La versión editable en PowerPoint está en [`presentation/presentacion_MAP.pptx`](presentation/presentacion_MAP.pptx). Puede regenerarse a partir de los mismos activos con:
+
+```bash
+python presentation/generar_presentacion.py
+```
+
+Para comprobar de una vez la ejecución almacenada, las rutas de imágenes y los formatos entregables:
+
+```bash
+python validate_project.py
+```
+
 ## Entregables
 
 | Entregable | Formato | Enlace |
@@ -339,6 +365,10 @@ Controles disponibles:
 | Informe científico completo | `.pdf` | [Abrir informe](report/informe_analisis_exploratorio_MAP.pdf) |
 | Fuente editable del informe | `.tex` | [Abrir fuente](report/informe_analisis_exploratorio_MAP.tex) |
 | Presentación interactiva | `.html` | [Abrir presentación](presentation/presentacion_MAP.html) |
+| Presentación PowerPoint | `.pptx` | [Descargar PowerPoint](presentation/presentacion_MAP.pptx) |
+| Copia PDF de la presentación | `.pdf` | [Abrir presentación](presentation/presentacion_MAP.pdf) |
+| Revisión bibliográfica | `.pdf` | [Abrir revisión](report/revision_bibliografica_algoritmos_MAP.pdf) |
+| Fuente de la revisión bibliográfica | `.tex` | [Abrir fuente](report/revision_bibliografica_algoritmos_MAP.tex) |
 | Presentación documental del repositorio | `.pdf` | [Abrir PDF](file/Presentacion_Repositorio_MAP.pdf) |
 | Documento editable del repositorio | `.docx` | [Descargar DOCX](file/Presentacion_Repositorio_MAP.docx) |
 | Instrucciones académicas | `.pdf` | [Abrir instrucciones](instructions/Proyecto%202.%20Análisis%20Exploratorio.%202026.pdf) |
@@ -350,15 +380,14 @@ Controles disponibles:
 - Las concepciones raras disponen de pocos ejemplos.
 - La asociación léxica no demuestra causalidad pedagógica.
 - La evaluación debe evitar fuga de información entre preguntas.
-- Falta registrar formalmente las dependencias en `requirements.txt` o `environment.yml`.
-- La guía académica solicita una presentación de PowerPoint; debe confirmarse si el HTML puede sustituir ese formato.
+- Las métricas de transferencia por pregunta serán severas porque 32 de las 35 concepciones son exclusivas de una sola pregunta.
 - Deben hacerse `commit` y `push` de los entregables finales con autoría clara para cada integrante.
 
 ### Siguiente experimento recomendado
 
 1. construir un *baseline* TF-IDF de palabras y caracteres;
 2. comparar clasificación plana y jerárquica;
-3. validar con `GroupKFold` por `QuestionId`;
+3. comparar `StratifiedKFold` con `GroupKFold` por `QuestionId`;
 4. reportar MAP@3, macro-F1 y resultados por pregunta;
 5. revisar cualitativamente falsos positivos y clases raras;
 6. comparar posteriormente con BERT, DeBERTa o MathBERT.
@@ -367,9 +396,10 @@ Controles disponibles:
 
 | Integrante | Rol general |
 |---|---|
-| **Daniel Barillas** | Análisis, documentación y repositorio. |
-| **Mario Gómez** | Análisis exploratorio y revisión. |
-| **Marco Romero** | Análisis exploratorio y comunicación. |
+| **Jorge Gabriel Palacios Sales** | Integrante del grupo. |
+| **Pablo Daniel Barillas Moreno** | Integrante del grupo. |
+| **Roberto Emiliano Otoniel Camposeco Torres** | Integrante del grupo. |
+| **Abby Sofia Donis Agreda** | Integrante del grupo. |
 
 > La evaluación del curso considera las contribuciones individuales reflejadas en el historial de Git.
 
