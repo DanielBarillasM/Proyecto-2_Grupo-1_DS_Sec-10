@@ -19,6 +19,8 @@ requeridos = [
     HTML,
     PPTX,
     ROOT / "presentation" / "presentacion_MAP.pdf",
+    ROOT / "presentation" / "guion_presentacion_MAP.tex",
+    ROOT / "presentation" / "guion_presentacion_MAP.pdf",
     DOCX,
     ROOT / "file" / "Presentacion_Repositorio_MAP.pdf",
     ROOT / "report" / "informe_analisis_exploratorio_MAP.tex",
