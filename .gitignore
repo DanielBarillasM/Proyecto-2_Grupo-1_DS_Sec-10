@@ -223,3 +223,6 @@ data
 
 # memsearch (estado local de indexado y memoria)
 .memsearch/
+
+# Modelos entrenados (se regeneran con notebooks/02_modelado.py)
+models/

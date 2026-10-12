@@ -1,0 +1,117 @@
+{
+  "n_train": 29357,
+  "n_test": 7339,
+  "n_clases": 65,
+  "clases_prueba": 58,
+  "mejores_hiperparametros": {
+    "Complement Naive Bayes": {
+      "alpha": 1.0
+    },
+    "SVM lineal": {
+      "C": 0.3,
+      "class_weight": null
+    },
+    "Regresión logística": {
+      "C": 4.0,
+      "class_weight": null
+    },
+    "Regresión logística jerárquica": {
+      "C": 4.0,
+      "class_weight": null
+    },
+    "Baseline (pregunta+opción)": {}
+  },
+  "mejor_modelo": "Regresión logística jerárquica",
+  "prueba": [
+    {
+      "Modelo": "Baseline (pregunta+opción)",
+      "Hiperparámetros": "{}",
+      "MAP@3": 0.8380796657128583,
+      "Accuracy": 0.695190080392424,
+      "Top-3 accuracy": 0.9892355906799292,
+      "Macro-F1": 0.280211847058829,
+      "Weighted-F1": 0.612634236019709,
+      "Entrenamiento (s)": 0.2083685840043472,
+      "Predicción (s)": 0.03363783299573697
+    },
+    {
+      "Modelo": "Complement Naive Bayes",
+      "Hiperparámetros": "{\"alpha\": 1.0}",
+      "MAP@3": 0.778239542171958,
+      "Accuracy": 0.676795203706227,
+      "Top-3 accuracy": 0.8980787573238861,
+      "Macro-F1": 0.3169837483311934,
+      "Weighted-F1": 0.6527762575195444,
+      "Entrenamiento (s)": 15.578106458997354,
+      "Predicción (s)": 1.4115182920068037
+    },
+    {
+      "Modelo": "SVM lineal",
+      "Hiperparámetros": "{\"C\": 0.3, \"class_weight\": null}",
+      "MAP@3": 0.9187673161647818,
+      "Accuracy": 0.8550211200436026,
+      "Top-3 accuracy": 0.9855566153426898,
+      "Macro-F1": 0.5224675733629415,
+      "Weighted-F1": 0.8486071068429255,
+      "Entrenamiento (s)": 19.72422458299843,
+      "Predicción (s)": 0.8242726660100743
+    },
+    {
+      "Modelo": "Regresión logística",
+      "Hiperparámetros": "{\"C\": 4.0, \"class_weight\": null}",
+      "MAP@3": 0.9209701594222646,
+      "Accuracy": 0.8505245946314212,
+      "Top-3 accuracy": 0.9949584412045238,
+      "Macro-F1": 0.5216605777350056,
+      "Weighted-F1": 0.845302983944568,
+      "Entrenamiento (s)": 131.62349637498846,
+      "Predicción (s)": 1.0719015830109129
+    },
+    {
+      "Modelo": "Regresión logística jerárquica",
+      "Hiperparámetros": "{\"C\": 4.0, \"class_weight\": null}",
+      "MAP@3": 0.9211064177680883,
+      "Accuracy": 0.8505245946314212,
+      "Top-3 accuracy": 0.9953672162419949,
+      "Macro-F1": 0.5216578046885577,
+      "Weighted-F1": 0.8453077162654229,
+      "Entrenamiento (s)": 106.73852241599525,
+      "Predicción (s)": 1.0376606670033652
+    }
+  ],
+  "por_dimension": {
+    "Veracidad (True/False)": 0.9991824499250579,
+    "Category (6 clases)": 0.8537947949311895,
+    "Etiqueta compuesta (65 clases)": 0.8505245946314212,
+    "Misconception (solo filas con concepción)": 0.8414387031408308
+  },
+  "transferencia": [
+    {
+      "Modelo": "Baseline (pregunta+opción)",
+      "MAP@3 preguntas no vistas": 0.5392149815792868,
+      "Accuracy Category preguntas no vistas": 0.402009454843701
+    },
+    {
+      "Modelo": "Regresión logística",
+      "MAP@3 preguntas no vistas": 0.3896667926491945,
+      "Accuracy Category preguntas no vistas": 0.20740978676503702
+    }
+  ],
+  "map3_por_pregunta": {
+    "31772": 0.92322695035461,
+    "31774": 0.8877032520325204,
+    "31777": 0.9664871334530222,
+    "31778": 0.9131423374261028,
+    "32829": 0.9603729603729604,
+    "32833": 0.9219170705438879,
+    "32835": 0.9009200283085633,
+    "33471": 0.9284221525600836,
+    "33472": 0.9413793103448276,
+    "33474": 0.9050505050505051,
+    "76870": 0.9255464480874317,
+    "89443": 0.9140981735159818,
+    "91695": 0.9018867924528302,
+    "104665": 0.9271708683473389,
+    "109465": 0.9049707602339182
+  }
+}
