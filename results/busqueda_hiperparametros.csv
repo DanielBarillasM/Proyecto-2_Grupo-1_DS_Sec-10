@@ -1,16 +1,11 @@
 Modelo,Hiperparámetros,MAP@3 CV (media),MAP@3 CV (desv.)
-Complement Naive Bayes,"{""alpha"": 0.01}",0.7696687375897694,0.0010913452878622166
-Complement Naive Bayes,"{""alpha"": 0.03}",0.7698220467948812,0.0006143761211506448
-Complement Naive Bayes,"{""alpha"": 0.1}",0.7695268236659216,0.0008306336941847814
-Complement Naive Bayes,"{""alpha"": 0.3}",0.7708666519556666,0.0007691548490252477
-Complement Naive Bayes,"{""alpha"": 1.0}",0.7762997626293466,0.0009691247761027461
-SVM lineal,"{""C"": 0.1, ""class_weight"": null}",0.9074837333389772,0.0009738287502749264
-SVM lineal,"{""C"": 0.1, ""class_weight"": ""balanced""}",0.8494906139282768,0.0030987635237704723
-SVM lineal,"{""C"": 0.3, ""class_weight"": null}",0.9106743401507874,0.0009466427019461324
-SVM lineal,"{""C"": 0.3, ""class_weight"": ""balanced""}",0.8790691049052691,0.002187561470681622
-SVM lineal,"{""C"": 1.0, ""class_weight"": null}",0.9072849735489187,0.0023229745483969756
-SVM lineal,"{""C"": 1.0, ""class_weight"": ""balanced""}",0.8919394168806973,0.0027563293685387135
-Regresión logística,"{""C"": 1.0, ""class_weight"": null}",0.9129566094308047,0.0007245077048225757
-Regresión logística,"{""C"": 4.0, ""class_weight"": null}",0.9150231585696003,0.001671435431012739
-Regresión logística,"{""C"": 16.0, ""class_weight"": null}",0.9131609749032404,0.0019058131591774467
-Regresión logística,"{""C"": 4.0, ""class_weight"": ""balanced""}",0.8699515321399787,0.0031389390920163276
+TF-IDF + SVM lineal,"{""C"": 0.1, ""class_weight"": null}",0.9074837333389772,0.0009738287502749
+TF-IDF + SVM lineal,"{""C"": 0.1, ""class_weight"": ""balanced""}",0.8494906139282768,0.0030987635237704
+TF-IDF + SVM lineal,"{""C"": 0.3, ""class_weight"": null}",0.9106743401507874,0.0009466427019461
+TF-IDF + SVM lineal,"{""C"": 0.3, ""class_weight"": ""balanced""}",0.8790691049052691,0.0021875614706816
+TF-IDF + SVM lineal,"{""C"": 1.0, ""class_weight"": null}",0.9072849735489188,0.0023229745483969
+TF-IDF + SVM lineal,"{""C"": 1.0, ""class_weight"": ""balanced""}",0.8919394168806973,0.0027563293685387
+TF-IDF + Regresión logística,"{""C"": 1.0, ""class_weight"": null}",0.9129566094308048,0.0007245077048225
+TF-IDF + Regresión logística,"{""C"": 4.0, ""class_weight"": null}",0.9150231585696004,0.0016714354310127
+TF-IDF + Regresión logística,"{""C"": 16.0, ""class_weight"": null}",0.9131609749032404,0.0019058131591774
+TF-IDF + Regresión logística,"{""C"": 4.0, ""class_weight"": ""balanced""}",0.8699515321399787,0.0031389390920163

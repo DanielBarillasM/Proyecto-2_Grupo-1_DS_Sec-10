@@ -1,0 +1,107 @@
+{
+  "n_train": 29357,
+  "n_sub": 26421,
+  "n_val": 2936,
+  "n_test": 7339,
+  "n_clases": 65,
+  "clases_prueba": 58,
+  "mejores_hiperparametros": {
+    "TF-IDF + SVM lineal": {
+      "C": 0.3,
+      "class_weight": null
+    },
+    "TF-IDF + Regresión logística": {
+      "C": 4.0,
+      "class_weight": null
+    },
+    "TF-IDF + Regresión logística jerárquica": {
+      "C": 4.0,
+      "class_weight": null
+    },
+    "Prior (pregunta+opción)": {}
+  },
+  "prueba": [
+    {
+      "Modelo": "Prior (pregunta+opción)",
+      "Hiperparámetros": "{}",
+      "MAP@3": 0.8380796657128583,
+      "Accuracy": 0.695190080392424,
+      "Top-3 accuracy": 0.9892355906799292,
+      "Macro-F1": 0.280211847058829,
+      "Weighted-F1": 0.612634236019709,
+      "Entrenamiento (s)": 0.01499175000935793,
+      "Predicción (s)": 0.0059621249965857714
+    },
+    {
+      "Modelo": "TF-IDF + SVM lineal",
+      "Hiperparámetros": "{\"C\": 0.3, \"class_weight\": null}",
+      "MAP@3": 0.9187673161647818,
+      "Accuracy": 0.8550211200436026,
+      "Top-3 accuracy": 0.9855566153426898,
+      "Macro-F1": 0.5224675733629415,
+      "Weighted-F1": 0.8486071068429255,
+      "Entrenamiento (s)": 9.743102332999115,
+      "Predicción (s)": 0.4369453330000397
+    },
+    {
+      "Modelo": "TF-IDF + Regresión logística jerárquica",
+      "Hiperparámetros": "{\"C\": 4.0, \"class_weight\": null}",
+      "MAP@3": 0.9211064177680883,
+      "Accuracy": 0.8505245946314212,
+      "Top-3 accuracy": 0.9953672162419949,
+      "Macro-F1": 0.5216578046885577,
+      "Weighted-F1": 0.8453077162654229,
+      "Entrenamiento (s)": 56.90202491701348,
+      "Predicción (s)": 0.5755637919937726
+    }
+  ],
+  "ablacion": [
+    {
+      "Entrada": "Texto solo",
+      "MAP@3": 0.8418040604987056,
+      "Accuracy": 0.7434255348140073,
+      "Top-3 accuracy": 0.9583049461779534,
+      "Macro-F1": 0.4354081541395907,
+      "Weighted-F1": 0.7333468335436575,
+      "Entrenamiento (s)": 72.56591241699061,
+      "Predicción (s)": 0.5085188329976518
+    },
+    {
+      "Entrada": "Texto + pregunta",
+      "MAP@3": 0.8517055002952264,
+      "Accuracy": 0.7563700776672572,
+      "Top-3 accuracy": 0.9647090884316665,
+      "Macro-F1": 0.46106005736464023,
+      "Weighted-F1": 0.7457473229451417,
+      "Entrenamiento (s)": 82.67653224999958,
+      "Predicción (s)": 0.5594359579990851
+    },
+    {
+      "Entrada": "Texto + pregunta + opción",
+      "MAP@3": 0.9209701594222646,
+      "Accuracy": 0.8505245946314212,
+      "Top-3 accuracy": 0.9949584412045238,
+      "Macro-F1": 0.5216605777350056,
+      "Weighted-F1": 0.845302983944568,
+      "Entrenamiento (s)": 53.20521991699934,
+      "Predicción (s)": 0.4615309999935562
+    }
+  ],
+  "transferencia": [
+    {
+      "Modelo": "Prior (pregunta+opción)",
+      "MAP@3 preguntas no vistas": 0.5404068022180257,
+      "Accuracy Category preguntas no vistas": 0.4034641416205765
+    },
+    {
+      "Modelo": "TF-IDF + RL (texto solo)",
+      "MAP@3 preguntas no vistas": 0.46136750687735223,
+      "Accuracy Category preguntas no vistas": 0.31374457613352635
+    },
+    {
+      "Modelo": "TF-IDF + RL (texto + pregunta + opción)",
+      "MAP@3 preguntas no vistas": 0.39086696746666805,
+      "Accuracy Category preguntas no vistas": 0.2085052952715789
+    }
+  ]
+}

@@ -248,5 +248,11 @@ presentation/guion_presentacion_MAP.tex
 presentation/guion_presentacion_MAP.pdf
 
 # Artefactos binarios o voluminosos regenerables
-models/
+models/*_map/
 report/model_results/predicciones_validacion_mejor_modelo.csv
+
+# Salidas descargadas de los kernels de Kaggle
+kaggle/salida-*/
+
+# Registros de ejecución locales
+logs/

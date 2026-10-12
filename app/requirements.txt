@@ -1,0 +1,9 @@
+# Dependencias de la aplicación Streamlit (Streamlit Community Cloud usa este archivo).
+# scikit-learn y numpy deben coincidir con las versiones con que se guardaron los modelos.
+streamlit==1.65.0
+plotly==7.1.0
+pandas==3.0.3
+numpy==2.5.1
+scikit-learn==1.9.0
+scipy
+joblib
