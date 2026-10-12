@@ -30,6 +30,7 @@ PALETA = {
     "TF-IDF + SVM lineal": CIAN,
     "TF-IDF + Regresión logística jerárquica": AZUL,
     "DeBERTa-v3": AMBAR,
+    "MathBERT": ROJO,
     "Ensamble calibrado": VERDE,
 }
 COLOR_CAT = {"True_Correct": "#2F9B77", "True_Neither": "#8CC7A1", "True_Misconception": "#F2B84B",
@@ -98,7 +99,8 @@ def cargar_deberta():
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
     except ImportError:
         return None
-    origen = MODELS / "deberta_map"
+    pref = (ENS or {}).get("transformer") or "deberta"
+    origen = MODELS / f"{pref}_map"
     if not origen.exists():
         try:
             origen = st.secrets.get("DEBERTA_REPO", None)
@@ -132,6 +134,7 @@ def cargar_resultados():
 
 CLASES = np.load(RES / "clases.npy", allow_pickle=True)
 ENS = json.loads((MODELS / "ensamble.json").read_text()) if (MODELS / "ensamble.json").exists() else None
+NOMBRE_T = (ENS or {}).get("nombre_transformer") or "DeBERTa-v3"
 
 
 def predecir(entrada: pd.DataFrame, nombres):
@@ -146,7 +149,7 @@ def predecir(entrada: pd.DataFrame, nombres):
             if n == "TF-IDF + SVM lineal":
                 s = mm.softmax(s[None, :] * 5)[0]  # puntaje relativo (la SVM no estima probabilidades)
             salida[n] = s
-    if {"DeBERTa-v3", "Ensamble calibrado"} & set(nombres):
+    if {NOMBRE_T, "Ensamble calibrado"} & set(nombres):
         deb = cargar_deberta()
         if deb is not None and ENS is not None:
             import torch
@@ -155,8 +158,8 @@ def predecir(entrada: pd.DataFrame, nombres):
                 z = modelo(**tok(mm.texto_transformer(d), truncation=True, max_length=160,
                                  return_tensors="pt")).logits.float().numpy()
             p_deb = mm.softmax(z, ENS["temperatura"])[0]
-            if "DeBERTa-v3" in nombres:
-                salida["DeBERTa-v3"] = p_deb
+            if NOMBRE_T in nombres:
+                salida[NOMBRE_T] = p_deb
             if "Ensamble calibrado" in nombres and "TF-IDF + Regresión logística jerárquica" in modelos:
                 lr = modelos["TF-IDF + Regresión logística jerárquica"]
                 p_lr = mm.alinear(lr.scores(d), lr.classes_, CLASES)[0]
@@ -190,7 +193,7 @@ df, hay_textos = cargar_datos()
 preguntas = cargar_preguntas()
 disponibles = list(cargar_modelos())
 if ENS is not None and ENS.get("hay_deberta") and cargar_deberta() is not None:
-    disponibles += ["DeBERTa-v3", "Ensamble calibrado"]
+    disponibles += [NOMBRE_T, "Ensamble calibrado"]
 
 # ===========================================================================
 # 1. CLASIFICAR
@@ -206,30 +209,31 @@ if pagina == "Clasificar una explicación":
                            format_func=lambda q: f"{q} · {preguntas.set_index('QuestionId').loc[q, 'Pregunta']}")
         fila_q = preguntas.set_index("QuestionId").loc[qid]
         opciones = json.loads(fila_q["Opciones"])
-        opcion = st.radio("Opción elegida", opciones, horizontal=True,
+        if st.session_state.get("opcion") not in opciones:
+            st.session_state["opcion"] = opciones[0]
+        opcion = st.radio("Opción elegida", opciones, horizontal=True, key="opcion",
                           format_func=lambda o: f"{o}  ✓" if o == fila_q["Correcta"] else o)
     with col2:
         st.markdown("**Ejemplos reales**")
         if hay_textos:
             ejemplos = df[df["QuestionId"] == qid]
             cat_ej = st.selectbox("Cargar un ejemplo de la categoría", sorted(ejemplos["Category"].unique()))
-            if st.button("🎲 Cargar ejemplo"):
+            def cargar_ejemplo():
                 ej = ejemplos[ejemplos["Category"] == cat_ej].sample(1).iloc[0]
                 st.session_state["explicacion"] = ej["StudentExplanation"]
-                st.session_state["opcion_ej"] = mm.limpiar_latex(ej["MC_Answer"])
+                st.session_state["opcion"] = mm.limpiar_latex(ej["MC_Answer"])
                 st.session_state["real"] = ej["target"]
+
+            st.button("🎲 Cargar ejemplo", on_click=cargar_ejemplo)
         else:
             st.caption("Los textos originales no se distribuyen en la versión web; escriba una explicación.")
 
-    if st.session_state.get("opcion_ej") and st.session_state["opcion_ej"] != opcion:
-        st.info(f"El ejemplo cargado corresponde a la opción **{st.session_state['opcion_ej']}**; "
-                "selecciónela para reproducir el caso original.")
     explicacion = st.text_area("Explicación del estudiante", key="explicacion", height=110,
                                placeholder="e.g. I think it is 1/3 because 3 of the 9 triangles are not shaded")
 
     elegir = st.multiselect("Modelos a utilizar", disponibles, default=disponibles,
                             help="Seleccione uno para verlo por separado o varios para compararlos.")
-    if "DeBERTa-v3" not in disponibles:
+    if NOMBRE_T not in disponibles:
         st.caption("DeBERTa-v3 y el ensamble no están disponibles en este entorno (modelo no descargado).")
 
     if st.button("Clasificar", type="primary", disabled=not explicacion.strip() or not elegir):
@@ -246,7 +250,7 @@ if pagina == "Clasificar una explicación":
                 orden = np.argsort(-s)[:3]
                 for r, j in enumerate(orden, 1):
                     tarjeta(CLASES[j], s[j], r, prob=nombre != "TF-IDF + SVM lineal")
-                if ENS and nombre in ("Ensamble calibrado", "DeBERTa-v3",
+                if ENS and nombre in ("Ensamble calibrado", NOMBRE_T,
                                       "TF-IDF + Regresión logística jerárquica"):
                     if s[orden[0]] < ENS["umbral"]:
                         st.warning(f"Confianza {s[orden[0]]:.0%} < {ENS['umbral']:.0%}: "

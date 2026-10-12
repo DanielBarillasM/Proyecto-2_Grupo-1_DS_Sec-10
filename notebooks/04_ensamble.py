@@ -38,6 +38,7 @@ PALETA = {
     "TF-IDF + SVM lineal": "#28A9C7",
     "TF-IDF + Regresión logística jerárquica": "#2457A7",
     "DeBERTa-v3": "#F2B84B",
+    "MathBERT": "#C8553D",
     "Ensamble calibrado": "#2F9B77",
 }
 
@@ -52,28 +53,40 @@ iy_te = np.searchsorted(CLASES, y_te)
 lin = json.loads((OUT / "resumen_lineales.json").read_text(encoding="utf-8"))
 p_lr_val = np.load(OUT / "logistica_scores_val.npy")
 p_lr_te = np.load(OUT / "logistica_scores_test.npy")
-# Mientras no existan los resultados del Transformer, el ensamble se reduce a la
-# regresión logística jerárquica (α = 0) y se omiten las figuras de DeBERTa.
-HAY_DEB = (OUT / "deberta_logits_test.npy").exists()
-if HAY_DEB:
-    deb = json.loads((OUT / "deberta_resumen.json").read_text(encoding="utf-8"))
-    z_val = np.load(OUT / "deberta_logits_val.npy")
-    z_te = np.load(OUT / "deberta_logits_test.npy")
-else:
-    print("Sin resultados de DeBERTa: se usa solo la regresión logística.")
-    z_val, z_te = np.log(p_lr_val.clip(1e-9)), np.log(p_lr_te.clip(1e-9))
+# Transformers disponibles (resultados de notebooks/03_transformer.py o de Kaggle).
+NOMBRES_T = {"deberta": "DeBERTa-v3", "mathbert": "MathBERT"}
 
-# ---------------------------------------------------------------------------
-# 1. Escalado de temperatura (minimiza la log-verosimilitud negativa en validación)
-# ---------------------------------------------------------------------------
+
 def nll(p, iy):
     return float(-np.log(p[np.arange(len(iy)), iy].clip(1e-12)).mean())
 
 
+# 1. Escalado de temperatura de cada Transformer (minimiza la NLL en validación)
 temps = np.linspace(0.5, 3.0, 51)
-T = float(temps[np.argmin([nll(mm.softmax(z_val, t), iy_val) for t in temps])]) if HAY_DEB else 1.0
-p_deb_val, p_deb_te = mm.softmax(z_val, T), mm.softmax(z_te, T)
-print(f"Temperatura óptima: {T:.2f}")
+TRANS = {}
+for pref, nombre in NOMBRES_T.items():
+    if (OUT / f"{pref}_logits_test.npy").exists():
+        zv, zt = np.load(OUT / f"{pref}_logits_val.npy"), np.load(OUT / f"{pref}_logits_test.npy")
+        t = float(temps[np.argmin([nll(mm.softmax(zv, x), iy_val) for x in temps])])
+        TRANS[pref] = {"nombre": nombre, "T": t, "z_te": zt,
+                       "p_val": mm.softmax(zv, t), "p_te": mm.softmax(zt, t),
+                       "resumen": json.loads((OUT / f"{pref}_resumen.json").read_text(encoding="utf-8"))}
+        TRANS[pref]["map_val"] = mm.map_at_3(y_val, mm.top_k(TRANS[pref]["p_val"], CLASES))
+        print(f"{nombre}: temperatura {t:.2f} · MAP@3 val {TRANS[pref]['map_val']:.4f}")
+HAY_DEB = bool(TRANS)
+if HAY_DEB:
+    # Para el ensamble se usa el Transformer con mejor MAP@3 en validación.
+    PREF = max(TRANS, key=lambda k: TRANS[k]["map_val"])
+    deb = TRANS[PREF]["resumen"]
+    T, z_te = TRANS[PREF]["T"], TRANS[PREF]["z_te"]
+    p_deb_val, p_deb_te = TRANS[PREF]["p_val"], TRANS[PREF]["p_te"]
+    NOMBRE_T = TRANS[PREF]["nombre"]
+    print("Transformer del ensamble:", NOMBRE_T)
+else:
+    print("Sin resultados de Transformers: se usa solo la regresión logística.")
+    PREF, NOMBRE_T, T = None, None, 1.0
+    z_te = np.log(p_lr_te.clip(1e-9))
+    p_deb_val, p_deb_te = p_lr_val, p_lr_te
 
 # ---------------------------------------------------------------------------
 # 2. Ensamble: α en validación + restricción jerárquica
@@ -100,13 +113,13 @@ print(f"α óptimo: {ALFA:.2f} (MAP@3 val = {max(curva_alfa):.4f})")
 # 3. Métricas de prueba de todos los modelos
 # ---------------------------------------------------------------------------
 filas = [{k: v for k, v in r.items() if k != "Hiperparámetros"} for r in lin["prueba"]]
+t_lr = next(r for r in lin["prueba"] if "jerárquica" in r["Modelo"])
+for pref, info in TRANS.items():
+    filas.append({"Modelo": info["nombre"], **mm.metricas(y_te, mm.top_k(info["p_te"], CLASES)),
+                  "Entrenamiento (s)": info["resumen"]["entrenamiento_s"],
+                  "Predicción (s)": info["resumen"]["prediccion_s"]})
 if HAY_DEB:
-    m_deb = mm.metricas(y_te, mm.top_k(p_deb_te, CLASES))
-    filas.append({"Modelo": "DeBERTa-v3", **m_deb,
-                  "Entrenamiento (s)": deb["entrenamiento_s"], "Predicción (s)": deb["prediccion_s"]})
-    t_lr = next(r for r in lin["prueba"] if "jerárquica" in r["Modelo"])
-    m_ens = mm.metricas(y_te, mm.top_k(p_ens_te, CLASES))
-    filas.append({"Modelo": "Ensamble calibrado", **m_ens,
+    filas.append({"Modelo": "Ensamble calibrado", **mm.metricas(y_te, mm.top_k(p_ens_te, CLASES)),
                   "Entrenamiento (s)": deb["entrenamiento_s"] + t_lr["Entrenamiento (s)"],
                   "Predicción (s)": deb["prediccion_s"] + t_lr["Predicción (s)"]})
 res = pd.DataFrame(filas)
@@ -116,9 +129,10 @@ print(res.round(4).to_string())
 # Calibración (ECE) de los modelos probabilísticos
 cal = {"TF-IDF + Regresión logística jerárquica": mm.ece(p_lr_te, iy_te)}
 if HAY_DEB:
-    cal.update({"DeBERTa-v3 (sin calibrar)": mm.ece(mm.softmax(z_te), iy_te),
-                "DeBERTa-v3 (temperatura)": mm.ece(p_deb_te, iy_te),
-                "Ensamble calibrado": mm.ece(p_ens_te, iy_te)})
+    for info in TRANS.values():
+        cal[f"{info['nombre']} (sin calibrar)"] = mm.ece(mm.softmax(info["z_te"]), iy_te)
+        cal[f"{info['nombre']} (temperatura)"] = mm.ece(info["p_te"], iy_te)
+    cal["Ensamble calibrado"] = mm.ece(p_ens_te, iy_te)
 
 # ---------------------------------------------------------------------------
 # 4. Abstención: umbral sobre la confianza de la primera etiqueta
@@ -146,14 +160,15 @@ cv_te.to_csv(OUT / "curva_abstencion.csv", index=False)
 
 # Transferencia (validación B)
 tb = pd.DataFrame(lin["transferencia"])
-ruta_g = OUT / "deberta_grupos.json"
-if ruta_g.exists():
-    g = json.loads(ruta_g.read_text(encoding="utf-8"))
-    tb = pd.concat([tb, pd.DataFrame([{
-        "Modelo": "DeBERTa-v3 (pregunta + opción + explicación)",
-        "MAP@3 preguntas no vistas": g["MAP@3 media"],
-        "Accuracy Category preguntas no vistas": float(np.mean([p["Accuracy Category"] for p in g["pliegues"]])),
-    }])], ignore_index=True)
+for pref, nombre in NOMBRES_T.items():
+    ruta_g = OUT / f"{pref}_grupos.json"
+    if ruta_g.exists():
+        g = json.loads(ruta_g.read_text(encoding="utf-8"))
+        tb = pd.concat([tb, pd.DataFrame([{
+            "Modelo": f"{nombre} (pregunta + opción + explicación)",
+            "MAP@3 preguntas no vistas": g["MAP@3 media"],
+            "Accuracy Category preguntas no vistas": float(np.mean([p["Accuracy Category"] for p in g["pliegues"]])),
+        }])], ignore_index=True)
 tb.to_csv(OUT / "transferencia.csv", index=False)
 
 # Desempeño por dimensión y por pregunta del ensamble
@@ -169,7 +184,8 @@ dim["Misconception (solo filas con concepción)"] = float(np.mean(
 por_preg = (pd.Series(mm.map_at_3_filas(y_te, mm.top_k(p_ens_te, CLASES)))
             .groupby(te["QuestionId"].values).mean())
 
-resumen = {"temperatura": T, "alfa": ALFA, "curva_alfa": dict(zip(map(str, alfas), curva_alfa)),
+resumen = {"temperatura": T, "alfa": ALFA, "transformer_ensamble": NOMBRE_T,
+           "transformers": {i["nombre"]: {"temperatura": i["T"], "MAP@3 val": i["map_val"]} for i in TRANS.values()}, "curva_alfa": dict(zip(map(str, alfas), curva_alfa)),
            "ece": cal, "abstencion": abst, "por_dimension": dim,
            "map3_por_pregunta": {str(k): float(v) for k, v in por_preg.items()},
            "mejor_modelo": res.sort_values("MAP@3").iloc[-1]["Modelo"],
@@ -177,7 +193,8 @@ resumen = {"temperatura": T, "alfa": ALFA, "curva_alfa": dict(zip(map(str, alfas
 (OUT / "resumen_final.json").write_text(json.dumps(resumen, indent=2, ensure_ascii=False))
 np.save(OUT / "ensamble_probs_test.npy", p_ens_te.astype(np.float32))
 (mm.ROOT / "models" / "ensamble.json").write_text(json.dumps(
-    {"temperatura": T, "alfa": ALFA, "umbral": TAU, "hay_deberta": HAY_DEB}))
+    {"temperatura": T, "alfa": ALFA, "umbral": TAU, "hay_deberta": HAY_DEB,
+     "transformer": PREF, "nombre_transformer": NOMBRE_T}))
 
 # ---------------------------------------------------------------------------
 # 5. Figuras
@@ -232,7 +249,7 @@ ax.set_title("F1 por clase frente a su frecuencia"); ax.legend(fontsize=8)
 plt.tight_layout(); fig.savefig(FIGS / "f1_vs_soporte.png", bbox_inches="tight"); plt.close(fig)
 
 fig, ax = plt.subplots(figsize=(9.5, 4.8))
-colores_b = ["#9AA5B1", "#7FB3D5", "#2457A7", "#F2B84B"][:len(tb)]
+colores_b = ["#9AA5B1", "#7FB3D5", "#2457A7", "#F2B84B", "#C8553D"][:len(tb)]
 ax.barh(tb["Modelo"], tb["MAP@3 preguntas no vistas"], color=colores_b)
 for i, v in enumerate(tb["MAP@3 preguntas no vistas"]):
     ax.text(v + 0.01, i, f"{v:.3f}", va="center", fontsize=9)
@@ -253,8 +270,8 @@ fig, ax = plt.subplots(figsize=(7, 6))
 ax.plot([0, 1], [0, 1], ls="--", color="#9AA5B1", label="Calibración perfecta")
 curvas_cal = [("TF-IDF + RL jerárquica", p_lr_te, "#2457A7")]
 if HAY_DEB:
-    curvas_cal += [("DeBERTa-v3 sin calibrar", mm.softmax(z_te), "#E07A5F"),
-                   ("DeBERTa-v3 con temperatura", p_deb_te, "#F2B84B"),
+    curvas_cal += [(f"{NOMBRE_T} sin calibrar", mm.softmax(z_te), "#E07A5F"),
+                   (f"{NOMBRE_T} con temperatura", p_deb_te, "#F2B84B"),
                    ("Ensamble calibrado", p_ens_te, "#2F9B77")]
 for nombre, p, color in curvas_cal:
     conf, ok = p.max(1), p.argmax(1) == iy_te
@@ -277,15 +294,18 @@ ax1.set_xlabel("Umbral de confianza"); ax1.set_ylabel("Proporción"); ax1.set_yl
 ax1.set_title("Abstención: casos derivados al docente según el umbral"); ax1.legend(fontsize=8, loc="lower left")
 plt.tight_layout(); fig.savefig(FIGS / "abstencion.png", bbox_inches="tight"); plt.close(fig)
 
-hist = pd.DataFrame(deb["historia"]) if HAY_DEB else None
-fig, ax = plt.subplots(figsize=(7, 4)) if HAY_DEB else (None, None)
 if HAY_DEB:
-    ax.plot(hist["época"], hist["MAP@3 val"], marker="o", color="#F2B84B", label="MAP@3 validación")
-    ax2 = ax.twinx(); ax2.plot(hist["época"], hist["pérdida"], marker="s", color="#2457A7", label="Pérdida de entrenamiento")
-    ax.set_xlabel("Época"); ax.set_ylabel("MAP@3 validación"); ax2.set_ylabel("Pérdida")
-    ax.set_xticks(hist["época"]); ax.set_title("Curva de aprendizaje de DeBERTa-v3")
-    h1, l1 = ax.get_legend_handles_labels(); h2, l2 = ax2.get_legend_handles_labels()
-    ax.legend(h1 + h2, l1 + l2, fontsize=8, loc="center right"); ax2.grid(False)
+    fig, (ax, ax2) = plt.subplots(1, 2, figsize=(11, 4))
+    for info in TRANS.values():
+        h = pd.DataFrame(info["resumen"]["historia"])
+        c = PALETA[info["nombre"]]
+        ax.plot(h["época"], h["MAP@3 val"], marker="o", color=c, label=info["nombre"])
+        ax2.plot(h["época"], h["pérdida"], marker="s", color=c, label=info["nombre"])
+        ax.set_xticks(h["época"]); ax2.set_xticks(h["época"])
+    ax.set_xlabel("Época"); ax.set_ylabel("MAP@3 en validación"); ax.set_title("MAP@3 en validación")
+    ax2.set_xlabel("Época"); ax2.set_ylabel("Pérdida de entrenamiento"); ax2.set_title("Pérdida de entrenamiento")
+    ax.legend(fontsize=8); ax2.legend(fontsize=8)
+    fig.suptitle("Curvas de aprendizaje de los Transformers", fontweight="bold")
     plt.tight_layout(); fig.savefig(FIGS / "curva_deberta.png", bbox_inches="tight"); plt.close(fig)
 
 bq = pd.read_csv(OUT / "busqueda_hiperparametros.csv")
@@ -305,7 +325,7 @@ if HAY_DEB:
   fig, ax = plt.subplots(figsize=(7, 4))
   ax.plot(alfas, curva_alfa, marker="o", color="#2F9B77")
   ax.axvline(ALFA, ls="--", color="#9AA5B1")
-  ax.set_xlabel("α (peso de DeBERTa en el ensamble)"); ax.set_ylabel("MAP@3 validación")
+  ax.set_xlabel(f"α (peso de {NOMBRE_T} en el ensamble)"); ax.set_ylabel("MAP@3 validación")
   ax.set_title("Selección del peso del ensamble")
   plt.tight_layout(); fig.savefig(FIGS / "peso_ensamble.png", bbox_inches="tight"); plt.close(fig)
 pd.DataFrame(cm, index=cats, columns=cats).to_csv(OUT / "confusion_category.csv")
