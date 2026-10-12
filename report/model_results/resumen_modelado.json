@@ -1,0 +1,45 @@
+{
+  "fecha_ejecucion": "2026-10-12T14:30:37.027401-06:00",
+  "semilla": 42,
+  "python": "3.13.1",
+  "pandas": "2.2.3",
+  "scikit_learn": "1.8.0",
+  "filas_originales": 36696,
+  "filas_modelado_sin_duplicados_exactos": 35960,
+  "duplicados_exactos_retirados": 736,
+  "n_clases": 65,
+  "n_entrenamiento": 28769,
+  "n_validacion": 7191,
+  "n_caracteristicas_tfidf": 41763,
+  "densidad_tfidf_pct": 0.708125211535505,
+  "tiempo_vectorizacion_s": 26.541117399930954,
+  "mejor_modelo": "SVM lineal",
+  "validacion_estratificada": {
+    "modelo": "SVM lineal",
+    "map_at_3": 0.8823529411764706,
+    "top3_accuracy": 0.968571825893478,
+    "macro_f1": 0.49819214154420444,
+    "accuracy": 0.8062856348213044,
+    "tiempo_entrenamiento_s": 39.71736890007742,
+    "n_clases_modelo": 65
+  },
+  "validacion_preguntas_no_vistas": {
+    "modelo": "SVM lineal",
+    "map_at_3": 0.4293629786483148,
+    "top3_accuracy": 0.5889888830068819,
+    "macro_f1": 0.029301835123903514,
+    "accuracy": 0.3046056114346215,
+    "n_entrenamiento": 26515,
+    "n_validacion": 9445,
+    "n_preguntas_validacion": 3,
+    "preguntas_validacion": [
+      31772,
+      33474,
+      89443
+    ],
+    "porcentaje_etiquetas_no_vistas": 16.124933827421916,
+    "n_etiquetas_no_vistas": 10
+  },
+  "clases_validacion": 57,
+  "tiempo_total_s": 149.00568639999256
+}

@@ -2,19 +2,20 @@
 
 # MAP — Charting Student Math Misunderstandings
 
-### Análisis exploratorio de explicaciones matemáticas mediante NLP
+### Análisis exploratorio y modelos base de explicaciones matemáticas mediante NLP
 
 [![Python](https://img.shields.io/badge/Python-3.10%2B-2457A7?logo=python&logoColor=white)](https://www.python.org/)
-[![Jupyter](https://img.shields.io/badge/Jupyter-Notebook-F37626?logo=jupyter&logoColor=white)](notebooks/01_analisis_exploratorio.ipynb)
+[![Jupyter](https://img.shields.io/badge/Jupyter-2%20notebooks-F37626?logo=jupyter&logoColor=white)](notebooks/02_modelos_base_MAP.ipynb)
 [![Área](https://img.shields.io/badge/Área-NLP-28A9C7)](#metodología)
-[![Estado](https://img.shields.io/badge/Estado-EDA%20completo-2F9B77)](#resultados-principales)
+[![Estado](https://img.shields.io/badge/Estado-EDA%20%2B%20baselines-2F9B77)](#resultados-de-modelado-base)
 [![Licencia](https://img.shields.io/badge/Licencia-MIT-F2B84B)](LICENSE)
 
 **Proyecto 2 · CC3084 Data Science · Sección 10**<br>
 Universidad del Valle de Guatemala · 2026
 
 [Informe](report/informe_analisis_exploratorio_MAP.pdf) ·
-[Notebook](notebooks/01_analisis_exploratorio.ipynb) ·
+[Notebook EDA](notebooks/01_analisis_exploratorio.ipynb) ·
+[Notebook de modelos](notebooks/02_modelos_base_MAP.ipynb) ·
 [Presentación HTML](presentation/presentacion_MAP.html) ·
 [PowerPoint](presentation/presentacion_MAP.pptx) ·
 [Revisión bibliográfica](report/revision_bibliografica_algoritmos_MAP.pdf) ·
@@ -31,6 +32,7 @@ Universidad del Valle de Guatemala · 2026
 - [Objetivos](#objetivos)
 - [Datos](#datos)
 - [Resultados principales](#resultados-principales)
+- [Resultados de modelado base](#resultados-de-modelado-base)
 - [Metodología](#metodología)
 - [Estructura del repositorio](#estructura-del-repositorio)
 - [Instalación y ejecución](#instalación-y-ejecución)
@@ -41,7 +43,7 @@ Universidad del Valle de Guatemala · 2026
 
 ## Descripción
 
-Este repositorio contiene un análisis exploratorio del reto **MAP — Charting Student Math Misunderstandings**. El proyecto estudia explicaciones escritas por estudiantes para identificar patrones relacionados con:
+Este repositorio contiene el análisis exploratorio y una comparación reproducible de modelos base para el reto **MAP — Charting Student Math Misunderstandings**. El proyecto estudia explicaciones escritas por estudiantes para identificar patrones relacionados con:
 
 1. la corrección de la opción seleccionada;
 2. la calidad del razonamiento presentado; y
@@ -50,7 +52,7 @@ Este repositorio contiene un análisis exploratorio del reto **MAP — Charting 
 La unidad de análisis es una explicación vinculada con una pregunta y una opción de respuesta. Por ello, el problema no consiste únicamente en detectar palabras frecuentes: requiere interpretar conjuntamente el **contexto de la pregunta**, la **opción elegida** y el **razonamiento textual**.
 
 > [!IMPORTANT]
-> El propósito de un futuro modelo es apoyar la revisión y priorización docente. Sus predicciones no deben utilizarse como diagnóstico automático definitivo del estudiante.
+> El modelo base se diseñó para apoyar la revisión y priorización docente. Sus predicciones no deben utilizarse como diagnóstico automático definitivo del estudiante.
 
 ## Situación problemática
 
@@ -66,7 +68,7 @@ Revisar manualmente miles de explicaciones abiertas requiere tiempo y conocimien
 
 ### Objetivo general
 
-Caracterizar mediante análisis exploratorio la estructura, calidad y principales dificultades del conjunto de datos MAP, con énfasis en las relaciones entre pregunta, opción seleccionada, explicación escrita, categoría del razonamiento y concepción errónea.
+Caracterizar el conjunto MAP e implementar modelos base de NLP que permitan ordenar etiquetas compuestas, comparar su desempeño y medir su transferencia a preguntas no vistas.
 
 ### Objetivos específicos
 
@@ -76,6 +78,8 @@ Caracterizar mediante análisis exploratorio la estructura, calidad y principale
 - Estudiar cruces entre pregunta, opción, categoría y concepción errónea.
 - Detectar riesgos de fuga de información y proponer una estrategia de validación por pregunta.
 - Plantear una ruta de modelado NLP reproducible y pedagógicamente responsable.
+- Entrenar y comparar un prior ingenuo, Complement Naive Bayes, regresión logística y SVM lineal sobre una representación TF-IDF común.
+- Seleccionar el mejor baseline mediante MAP@3 y auditar su generalización con preguntas completas fuera del entrenamiento.
 
 ## Datos
 
@@ -167,6 +171,29 @@ La distribución de categorías y concepciones cambia entre preguntas. Un *split
 | Texto informal con notación matemática | Preservar números, operadores, negaciones y unidades. |
 | Etiquetas raras | Revisar desempeño y errores por clase. |
 
+## Resultados de modelado base
+
+Se concatenaron `QuestionText`, `MC_Answer` y `StudentExplanation`. Después de retirar **736 duplicados exactos**, se modelaron **35,960 respuestas** mediante una unión de TF-IDF de palabras —uno y dos términos— y caracteres —tres a cinco—, con **41,763 características**. Todos los clasificadores usaron la misma partición estratificada 80/20 y semilla 42.
+
+| Modelo | MAP@3 | Top-3 accuracy | Macro-F1 | Accuracy |
+|---|---:|---:|---:|---:|
+| **SVM lineal** | **0.882** | **0.969** | **0.498** | **0.806** |
+| Regresión logística —SGD— | 0.847 | 0.962 | 0.479 | 0.750 |
+| Complement Naive Bayes | 0.657 | 0.812 | 0.215 | 0.533 |
+| Prior ingenuo | 0.540 | 0.727 | 0.010 | 0.403 |
+
+<p align="center">
+  <img src="report/assets/modelos/comparacion_modelos_presentacion.png" alt="Comparación de modelos base" width="920">
+</p>
+
+**Selección:** SVM lineal es el mejor baseline porque lidera MAP@3, macro-F1 y accuracy bajo condiciones controladas. No se considera una solución final: en una segunda prueba con tres preguntas completas fuera del entrenamiento, MAP@3 cae a **0.429**, macro-F1 a **0.029** y accuracy a **0.305**. Además, **16.1%** de esas respuestas pertenece a diez etiquetas no observadas durante el ajuste.
+
+<p align="center">
+  <img src="report/assets/modelos/generalizacion_presentacion.png" alt="Generalización del SVM a preguntas no vistas" width="920">
+</p>
+
+Los resultados resumidos se encuentran en [`report/model_results/`](report/model_results/). El modelo serializado y las predicciones fila por fila se generan localmente, pero no se versionan porque son artefactos reproducibles y más voluminosos.
+
 ## Metodología
 
 ```mermaid
@@ -179,7 +206,9 @@ flowchart LR
     E --> G[Longitud, ruido y léxico]
     F --> H[Hallazgos y validación]
     G --> H
-    H --> I[Informe y presentación]
+    H --> I[TF-IDF y modelos base]
+    I --> J[Comparación y prueba agrupada]
+    J --> K[Informe y presentación]
 ```
 
 El notebook desarrolla las siguientes fases:
@@ -194,18 +223,18 @@ El notebook desarrolla las siguientes fases:
 8. extracción exploratoria de marcadores léxicos mediante TF-IDF;
 9. síntesis de hallazgos y recomendaciones de modelado.
 
-### Ruta de modelado propuesta
+### Ruta de modelado
 
 ```text
 TF-IDF de palabras y caracteres
              ↓
-Clasificador lineal interpretable
+Prior + Complement NB + regresión logística + SVM
              ↓
-BERT / DeBERTa con contexto de pregunta y opción
+SVM lineal seleccionado como baseline reproducible
              ↓
-Modelo especializado como MathBERT
+Prueba agrupada por QuestionId
              ↓
-Detección → verificación → revisión docente
+Siguiente fase: DeBERTa / MathBERT → calibración → revisión docente
 ```
 
 ## Estructura del repositorio
@@ -223,6 +252,9 @@ Proyecto-2_Grupo-1_DS_Sec-10/
 │   └── Proyecto 2. Análisis Exploratorio. 2026.pdf
 ├── notebooks/
 │   ├── 01_analisis_exploratorio.ipynb
+│   ├── 02_modelos_base_MAP.ipynb
+│   ├── entrenar_modelos_base_MAP.py
+│   ├── generar_graficas_presentacion_MAP.py
 │   └── exportar_figuras.py
 ├── presentation/
 │   ├── presentacion_MAP.html
@@ -231,6 +263,7 @@ Proyecto-2_Grupo-1_DS_Sec-10/
 │   └── generar_presentacion.py
 ├── report/
 │   ├── assets/                   # Figuras extraídas del notebook
+│   ├── model_results/            # Métricas, predicciones y resultados por clase
 │   ├── informe_analisis_exploratorio_MAP.tex
 │   ├── informe_analisis_exploratorio_MAP.pdf
 │   ├── revision_bibliografica_algoritmos_MAP.tex
@@ -305,17 +338,26 @@ data/sample_submission.csv
 > [!NOTE]
 > También se admite la estructura `data/raw/`; la celda de carga informa las rutas revisadas si no encuentra los archivos.
 
-### 5. Abrir el notebook
+### 5. Abrir los notebooks
 
 ```bash
 jupyter lab notebooks/01_analisis_exploratorio.ipynb
+jupyter lab notebooks/02_modelos_base_MAP.ipynb
 ```
 
-Ejecute las celdas en orden únicamente si necesita reproducir el análisis. El notebook versionado ya contiene salidas verificadas: sus **26 celdas de código** se ejecutaron secuencialmente y sin errores. Para actualizar los activos después de una ejecución:
+Ejecute las celdas en orden únicamente si necesita reproducir el análisis. Ambos notebooks versionados contienen salidas verificadas; el de modelos se ejecutó de principio a fin sin errores. Para actualizar los activos del EDA:
 
 ```bash
 python notebooks/exportar_figuras.py
 ```
+
+Para reproducir únicamente los modelos base desde la terminal:
+
+```bash
+python notebooks/entrenar_modelos_base_MAP.py
+```
+
+Este comando vuelve a entrenar los cuatro modelos, por lo que puede tardar varios minutos. Escribe métricas y predicciones en `report/model_results/`, figuras en `report/assets/modelos/` y el mejor artefacto en `models/`. El modelo, las predicciones completas y el guion de exposición son archivos locales ignorados por Git.
 
 ### 6. Compilar el informe LaTeX — opcional
 
@@ -362,6 +404,8 @@ python validate_project.py
 | Entregable | Formato | Enlace |
 |---|:---:|---|
 | Notebook de análisis exploratorio | `.ipynb` | [Abrir notebook](notebooks/01_analisis_exploratorio.ipynb) |
+| Notebook ejecutado de modelos base | `.ipynb` | [Abrir notebook](notebooks/02_modelos_base_MAP.ipynb) |
+| Métricas comparativas | `.csv` | [Abrir resultados](report/model_results/comparacion_modelos.csv) |
 | Informe científico completo | `.pdf` | [Abrir informe](report/informe_analisis_exploratorio_MAP.pdf) |
 | Fuente editable del informe | `.tex` | [Abrir fuente](report/informe_analisis_exploratorio_MAP.tex) |
 | Presentación interactiva | `.html` | [Abrir presentación](presentation/presentacion_MAP.html) |
@@ -379,18 +423,19 @@ python validate_project.py
 - El benchmark completo combina respuestas originales y sintéticas; esto debe considerarse al interpretar el ruido textual.
 - Las concepciones raras disponen de pocos ejemplos.
 - La asociación léxica no demuestra causalidad pedagógica.
-- La evaluación debe evitar fuga de información entre preguntas.
-- Las métricas de transferencia por pregunta serán severas porque 32 de las 35 concepciones son exclusivas de una sola pregunta.
+- La evaluación debe evitar fuga de información entre preguntas; `QuestionId` se usa para agrupar, no como predictor.
+- La prueba agrupada confirma una transferencia limitada: MAP@3 0.429 y macro-F1 0.029.
+- Diez etiquetas no aparecen en el entrenamiento de la partición agrupada y afectan 16.1% de sus respuestas de validación.
 - Deben hacerse `commit` y `push` de los entregables finales con autoría clara para cada integrante.
 
 ### Siguiente experimento recomendado
 
-1. construir un *baseline* TF-IDF de palabras y caracteres;
+1. mantener SVM lineal como baseline reproducible;
 2. comparar clasificación plana y jerárquica;
-3. comparar `StratifiedKFold` con `GroupKFold` por `QuestionId`;
-4. reportar MAP@3, macro-F1 y resultados por pregunta;
-5. revisar cualitativamente falsos positivos y clases raras;
-6. comparar posteriormente con BERT, DeBERTa o MathBERT.
+3. entrenar DeBERTa o MathBERT con pregunta, opción y explicación;
+4. conservar la misma prueba agrupada por `QuestionId` y reportar MAP@3, macro-F1 y resultados por pregunta;
+5. calibrar los puntajes top-3 y definir un criterio de abstención;
+6. revisar cualitativamente errores, clases raras y preguntas no vistas.
 
 ## Equipo
 
@@ -407,7 +452,9 @@ python validate_project.py
 
 - Devlin, J., Chang, M.-W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of deep bidirectional transformers for language understanding. *NAACL-HLT 2019*, 4171–4186. https://doi.org/10.18653/v1/N19-1423
 - He, P., Liu, X., Gao, J., & Chen, W. (2021). DeBERTa: Decoding-enhanced BERT with disentangled attention. *International Conference on Learning Representations*.
+- Kassis, T., Agarwal, V., He, Y., Patel, D., & Brueckner, A. M. (2026). *Scientific agent skills: A library of procedural knowledge for research agents* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2609.00065
 - King, J., Smith, K., Burleigh, L., Crossley, S., Demkin, M., & Reade, W. (2025). *MAP — Charting student math misunderstandings*. Kaggle. https://www.kaggle.com/competitions/map-charting-student-math-misunderstandings
+- Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., et al. (2011). Scikit-learn: Machine learning in Python. *Journal of Machine Learning Research, 12*, 2825–2830.
 - Rittle-Johnson, B., Adler, R., Durkin, K., Burleigh, L., King, J., & Crossley, S. (2025). Detecting math misconceptions: An AI benchmark dataset. *AIME-Con Works in Progress*, 20–24. https://aclanthology.org/2025.aimecon-wip.3/
 - Salton, G., & Buckley, C. (1988). Term-weighting approaches in automatic text retrieval. *Information Processing & Management, 24*(5), 513–523. https://doi.org/10.1016/0306-4573(88)90021-0
 - Shen, J. T., Yamashita, M., Prihar, E., Heffernan, N., Wu, X., Graff, B., & Lee, D. (2021). *MathBERT: A pre-trained language model for general NLP tasks in mathematics education* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2106.07340

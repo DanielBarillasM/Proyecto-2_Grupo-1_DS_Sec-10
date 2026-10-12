@@ -224,5 +224,29 @@ data
 # memsearch (estado local de indexado y memoria)
 .memsearch/
 
-# Modelos entrenados (se regeneran con notebooks/02_modelado.py)
+# Archivos temporales de compilación, auditoría y previsualización
+tmp/
+~$*
+presentation/audit_thumbnails/
+presentation/audit_thumbnails_v2/
+*.aux
+*.fdb_latexmk
+*.fls
+*.lof
+*.lot
+*.out
+*.synctex.gz
+*.toc
+
+# Material local de preparación para Canva; la versión final vive en Canva
+presentation/PLAN_CANVA_MAP.md
+presentation/generar_canva_map.py
+presentation/presentacion_CANVA_MAP.pptx
+
+# Guion de exposición solicitado solo para uso local
+presentation/guion_presentacion_MAP.tex
+presentation/guion_presentacion_MAP.pdf
+
+# Artefactos binarios o voluminosos regenerables
 models/
+report/model_results/predicciones_validacion_mejor_modelo.csv

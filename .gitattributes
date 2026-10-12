@@ -1,0 +1,14 @@
+# Mantener los archivos de código y resultados reproducibles con finales LF.
+*.py text eol=lf
+*.md text eol=lf
+*.ipynb text eol=lf
+*.csv text eol=lf
+*.json text eol=lf
+*.tex text eol=lf
+
+# Activos binarios.
+*.png binary
+*.pdf binary
+*.pptx binary
+*.docx binary
+*.joblib binary
