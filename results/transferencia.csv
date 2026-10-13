@@ -2,3 +2,5 @@ Modelo,MAP@3 preguntas no vistas,Accuracy Category preguntas no vistas
 Prior (pregunta+opción),0.5404068022180257,0.4034641416205765
 TF-IDF + RL (texto solo),0.46136750687735223,0.31374457613352635
 TF-IDF + RL (texto + pregunta + opción),0.39086696746666805,0.2085052952715789
+DeBERTa-v3 (pregunta + opción + explicación),0.29831736826973837,0.2525948955402374
+MathBERT (pregunta + opción + explicación),0.3244159015473384,0.2429292316855188

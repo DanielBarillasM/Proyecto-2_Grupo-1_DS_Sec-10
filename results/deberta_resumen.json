@@ -1,0 +1,44 @@
+{
+  "modelo_base": "microsoft/deberta-v3-base",
+  "hiperparametros": {
+    "modelo": "microsoft/deberta-v3-base",
+    "epocas": 3,
+    "lr": 2e-05,
+    "batch": 16,
+    "max_len": 160,
+    "grupos": false,
+    "epocas_grupos": 1,
+    "muestra": 0,
+    "prefijo": "deberta"
+  },
+  "historia": [
+    {
+      "época": 1,
+      "pérdida": 1.5454152549186284,
+      "minutos": 4.50414224465688,
+      "MAP@3 val": 0.8719913714804722
+    },
+    {
+      "época": 2,
+      "pérdida": 0.5835178701148411,
+      "minutos": 4.399109315872193,
+      "MAP@3 val": 0.8988987284287011
+    },
+    {
+      "época": 3,
+      "pérdida": 0.4359910154182996,
+      "minutos": 4.390895020961762,
+      "MAP@3 val": 0.9115009082652133
+    }
+  ],
+  "entrenamiento_s": 821.5825901031494,
+  "prediccion_s": 9.437166690826416,
+  "dispositivo": "cuda",
+  "prueba": {
+    "MAP@3": 0.9139755643366488,
+    "Accuracy": 0.8471181359858291,
+    "Top-3 accuracy": 0.9861016487259845,
+    "Macro-F1": 0.4075416234020758,
+    "Weighted-F1": 0.8381418525189284
+  }
+}

@@ -1,0 +1,21 @@
+{
+  "epocas": 2,
+  "pliegues": [
+    {
+      "pliegue": 1,
+      "MAP@3": 0.2627937443707525,
+      "Accuracy Category": 0.1642512077294686
+    },
+    {
+      "pliegue": 2,
+      "MAP@3": 0.24526762402088773,
+      "Accuracy Category": 0.22111618798955612
+    },
+    {
+      "pliegue": 3,
+      "MAP@3": 0.4651863362503749,
+      "Accuracy Category": 0.3434202993375317
+    }
+  ],
+  "MAP@3 media": 0.3244159015473384
+}

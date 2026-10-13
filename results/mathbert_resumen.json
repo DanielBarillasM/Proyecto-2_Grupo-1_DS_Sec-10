@@ -1,0 +1,44 @@
+{
+  "modelo_base": "tbs17/MathBERT",
+  "hiperparametros": {
+    "modelo": "tbs17/MathBERT",
+    "epocas": 3,
+    "lr": 3e-05,
+    "batch": 16,
+    "max_len": 160,
+    "grupos": false,
+    "epocas_grupos": 1,
+    "muestra": 0,
+    "prefijo": "mathbert"
+  },
+  "historia": [
+    {
+      "época": 1,
+      "pérdida": 1.0254294463855014,
+      "minutos": 2.4779938578605654,
+      "MAP@3 val": 0.8986716621253406
+    },
+    {
+      "época": 2,
+      "pérdida": 0.43261895056353933,
+      "minutos": 2.441239599386851,
+      "MAP@3 val": 0.9138283378746594
+    },
+    {
+      "época": 3,
+      "pérdida": 0.28698372962201335,
+      "minutos": 2.438733951250712,
+      "MAP@3 val": 0.926600817438692
+    }
+  ],
+  "entrenamiento_s": 455.07983207702637,
+  "prediccion_s": 4.958513975143433,
+  "dispositivo": "cuda",
+  "prueba": {
+    "MAP@3": 0.9257392015260935,
+    "Accuracy": 0.8618340373347868,
+    "Top-3 accuracy": 0.9929145660171685,
+    "Macro-F1": 0.5005550659591955,
+    "Weighted-F1": 0.8568973238852906
+  }
+}

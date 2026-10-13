@@ -80,20 +80,34 @@ def grupos_duplicados(df: pd.DataFrame) -> np.ndarray:
     return (df["QuestionId"].astype(str) + "|" + df["Explanation_clean"]).factorize()[0]
 
 
+ARCHIVO_PARTICIONES = ROOT / "results" / "particiones.npz"
+
+
 def particiones(df: pd.DataFrame):
     """Devuelve índices (entrenamiento, validación, prueba).
 
     Prueba = 20 % (StratifiedGroupKFold de 5 pliegues, pliegue 0).
     Validación = 10 % del entrenamiento (StratifiedGroupKFold de 10 pliegues),
     usada para detener el Transformer, calibrar y pesar el ensamble.
+
+    El reparto con barajado cambia entre versiones de scikit-learn, por lo que
+    los índices se guardan en results/particiones.npz y se reutilizan siempre
+    (localmente y en Kaggle) para evaluar todos los modelos sobre las mismas filas.
     """
+    if ARCHIVO_PARTICIONES.exists():
+        z = np.load(ARCHIVO_PARTICIONES)
+        if int(z["n"]) == len(df):
+            return z["full"], z["sub"], z["val"], z["test"]
     g = grupos_duplicados(df)
     sgkf = StratifiedGroupKFold(n_splits=5, shuffle=True, random_state=RANDOM_STATE)
     idx_tr, idx_te = next(sgkf.split(df, df["target"], groups=g))
     sub = df.iloc[idx_tr]
     sgkf2 = StratifiedGroupKFold(n_splits=10, shuffle=True, random_state=RANDOM_STATE)
     a, b = next(sgkf2.split(sub, sub["target"], groups=g[idx_tr]))
-    return idx_tr, idx_tr[a], idx_tr[b], idx_te  # train completo, train sin val, val, test
+    res = (idx_tr, idx_tr[a], idx_tr[b], idx_te)  # train completo, train sin val, val, test
+    ARCHIVO_PARTICIONES.parent.mkdir(exist_ok=True)
+    np.savez_compressed(ARCHIVO_PARTICIONES, n=len(df), full=res[0], sub=res[1], val=res[2], test=res[3])
+    return res
 
 
 # ---------------------------------------------------------------------------

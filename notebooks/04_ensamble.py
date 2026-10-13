@@ -214,8 +214,8 @@ fig.suptitle(f"Desempeño en el conjunto de prueba ({len(te):,} explicaciones)".
 plt.tight_layout(); fig.savefig(FIGS / "comparacion_metricas.png", bbox_inches="tight"); plt.close(fig)
 
 fig, ax = plt.subplots(figsize=(8.5, 5))
-desp = {"TF-IDF + Regresión logística jerárquica": (-10, -16), "Ensamble calibrado": (-10, 10),
-        "DeBERTa-v3": (-10, -16)}
+desp = {"TF-IDF + Regresión logística jerárquica": (-6, 10), "TF-IDF + SVM lineal": (-10, -16),
+        "Ensamble calibrado": (-10, 10), "DeBERTa-v3": (-10, -16), "MathBERT": (10, -4)}
 for _, r in res.iterrows():
     ax.scatter(r["Entrenamiento (s)"], r["MAP@3"], s=180, color=PALETA[r["Modelo"]], edgecolor="#1F2933", zorder=3)
     dx, dy = desp.get(r["Modelo"], (10, -4))

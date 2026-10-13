@@ -91,26 +91,28 @@ def cargar_modelos():
     return modelos
 
 
+TRANSFORMERS = {"deberta": "DeBERTa-v3", "mathbert": "MathBERT"}
+
+
 @st.cache_resource
-def cargar_deberta():
-    """DeBERTa local (models/deberta_map) o desde Hugging Face Hub (secreto DEBERTA_REPO)."""
+def cargar_transformer(pref):
+    """Transformer ajustado: local (models/<pref>_map) o desde Hugging Face Hub (secreto <PREF>_REPO)."""
     try:
         import torch
         from transformers import AutoModelForSequenceClassification, AutoTokenizer
     except ImportError:
         return None
-    pref = (ENS or {}).get("transformer") or "deberta"
     origen = MODELS / f"{pref}_map"
     if not origen.exists():
         try:
-            origen = st.secrets.get("DEBERTA_REPO", None)
+            origen = st.secrets.get(f"{pref.upper()}_REPO", None)
         except Exception:
             origen = None
         if not origen:
             return None
     try:
         tok = AutoTokenizer.from_pretrained(str(origen))
-        modelo = AutoModelForSequenceClassification.from_pretrained(str(origen), dtype=torch.float32)
+        modelo = AutoModelForSequenceClassification.from_pretrained(str(origen)).float()
         modelo.eval()
         return tok, modelo
     except Exception:
@@ -149,23 +151,29 @@ def predecir(entrada: pd.DataFrame, nombres):
             if n == "TF-IDF + SVM lineal":
                 s = mm.softmax(s[None, :] * 5)[0]  # puntaje relativo (la SVM no estima probabilidades)
             salida[n] = s
-    if {NOMBRE_T, "Ensamble calibrado"} & set(nombres):
-        deb = cargar_deberta()
-        if deb is not None and ENS is not None:
-            import torch
-            tok, modelo = deb
-            with torch.no_grad():
-                z = modelo(**tok(mm.texto_transformer(d), truncation=True, max_length=160,
-                                 return_tensors="pt")).logits.float().numpy()
-            p_deb = mm.softmax(z, ENS["temperatura"])[0]
-            if NOMBRE_T in nombres:
-                salida[NOMBRE_T] = p_deb
-            if "Ensamble calibrado" in nombres and "TF-IDF + Regresión logística jerárquica" in modelos:
-                lr = modelos["TF-IDF + Regresión logística jerárquica"]
-                p_lr = mm.alinear(lr.scores(d), lr.classes_, CLASES)[0]
-                mask = mm.alinear(lr.mascara(d).astype(float), lr.classes_, CLASES)[0] > 0
-                p = (ENS["alfa"] * p_deb + (1 - ENS["alfa"]) * p_lr) * mask
-                salida["Ensamble calibrado"] = p / max(p.sum(), 1e-12)
+    temps = cargar_resultados()["final"].get("transformers", {})
+    pref_ens = (ENS or {}).get("transformer")
+    for pref, nombre_t in TRANSFORMERS.items():
+        usa_ens = "Ensamble calibrado" in nombres and pref == pref_ens
+        if nombre_t not in nombres and not usa_ens:
+            continue
+        cargado = cargar_transformer(pref)
+        if cargado is None:
+            continue
+        import torch
+        tok, modelo = cargado
+        with torch.no_grad():
+            z = modelo(**tok(mm.texto_transformer(d), truncation=True, max_length=160,
+                             return_tensors="pt")).logits.float().numpy()
+        p_t = mm.softmax(z, temps.get(nombre_t, {}).get("temperatura", 1.0))[0]
+        if nombre_t in nombres:
+            salida[nombre_t] = p_t
+        if usa_ens and "TF-IDF + Regresión logística jerárquica" in modelos:
+            lr = modelos["TF-IDF + Regresión logística jerárquica"]
+            p_lr = mm.alinear(lr.scores(d), lr.classes_, CLASES)[0]
+            mask = mm.alinear(lr.mascara(d).astype(float), lr.classes_, CLASES)[0] > 0
+            p = (ENS["alfa"] * p_t + (1 - ENS["alfa"]) * p_lr) * mask
+            salida["Ensamble calibrado"] = p / max(p.sum(), 1e-12)
     return salida
 
 
@@ -192,8 +200,11 @@ st.sidebar.caption("Las predicciones orientan la revisión docente; no son un di
 df, hay_textos = cargar_datos()
 preguntas = cargar_preguntas()
 disponibles = list(cargar_modelos())
-if ENS is not None and ENS.get("hay_deberta") and cargar_deberta() is not None:
-    disponibles += [NOMBRE_T, "Ensamble calibrado"]
+for _pref, _nombre in TRANSFORMERS.items():
+    if cargar_transformer(_pref) is not None:
+        disponibles.append(_nombre)
+if ENS and ENS.get("hay_deberta") and TRANSFORMERS.get(ENS.get("transformer")) in disponibles:
+    disponibles.append("Ensamble calibrado")
 
 # ===========================================================================
 # 1. CLASIFICAR
@@ -233,8 +244,9 @@ if pagina == "Clasificar una explicación":
 
     elegir = st.multiselect("Modelos a utilizar", disponibles, default=disponibles,
                             help="Seleccione uno para verlo por separado o varios para compararlos.")
-    if NOMBRE_T not in disponibles:
-        st.caption("DeBERTa-v3 y el ensamble no están disponibles en este entorno (modelo no descargado).")
+    if "Ensamble calibrado" not in disponibles:
+        st.caption("Los Transformers y el ensamble no están disponibles en este entorno "
+                   "(modelos no descargados); se muestran los modelos TF-IDF.")
 
     if st.button("Clasificar", type="primary", disabled=not explicacion.strip() or not elegir):
         entrada = pd.DataFrame([{"QuestionId": qid, "QuestionText": fila_q["Pregunta"],
@@ -250,8 +262,7 @@ if pagina == "Clasificar una explicación":
                 orden = np.argsort(-s)[:3]
                 for r, j in enumerate(orden, 1):
                     tarjeta(CLASES[j], s[j], r, prob=nombre != "TF-IDF + SVM lineal")
-                if ENS and nombre in ("Ensamble calibrado", NOMBRE_T,
-                                      "TF-IDF + Regresión logística jerárquica"):
+                if ENS and nombre != "TF-IDF + SVM lineal" and nombre != "Prior (pregunta+opción)":
                     if s[orden[0]] < ENS["umbral"]:
                         st.warning(f"Confianza {s[orden[0]]:.0%} < {ENS['umbral']:.0%}: "
                                    "se recomienda **derivar al docente**.")
@@ -430,9 +441,10 @@ estudiante, predecir hasta tres etiquetas `Category:Misconception` ordenadas por
 **Modelos.**
 - *Prior (pregunta+opción)*: referencia sin texto.
 - *TF-IDF + SVM lineal* y *TF-IDF + Regresión logística jerárquica*: líneas base interpretables.
-- *DeBERTa-v3*: Transformer ajustado con la entrada pregunta + opción + explicación.
-- *Ensamble calibrado*: combinación ponderada de DeBERTa (escalado de temperatura) y la regresión
-  logística, con restricción jerárquica y umbral de abstención.
+- *DeBERTa-v3* y *MathBERT*: Transformers ajustados con la entrada pregunta + opción + explicación
+  (MathBERT está preentrenado con textos de educación matemática).
+- *Ensamble calibrado*: combinación ponderada del Transformer con mejor validación (escalado de
+  temperatura) y la regresión logística, con restricción jerárquica y umbral de abstención.
 
 **Uso responsable.** El sistema prioriza casos para la revisión docente. Cuando la confianza es baja,
 recomienda derivar el caso. No sustituye el juicio pedagógico.
