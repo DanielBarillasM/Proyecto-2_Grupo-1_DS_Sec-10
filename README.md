@@ -1,25 +1,24 @@
 <div align="center">
 
-# MAP — Charting Student Math Misunderstandings
+# MAP - Charting Student Math Misunderstandings
 
-### Análisis exploratorio y modelos base de explicaciones matemáticas mediante NLP
+### Clasificación de concepciones erróneas en explicaciones matemáticas mediante NLP
 
-[![Python](https://img.shields.io/badge/Python-3.10%2B-2457A7?logo=python&logoColor=white)](https://www.python.org/)
-[![Jupyter](https://img.shields.io/badge/Jupyter-2%20notebooks-F37626?logo=jupyter&logoColor=white)](notebooks/02_modelos_base_MAP.ipynb)
+[![Python](https://img.shields.io/badge/Python-3.13%2B-2457A7?logo=python&logoColor=white)](https://www.python.org/)
 [![Área](https://img.shields.io/badge/Área-NLP-28A9C7)](#metodología)
-[![Estado](https://img.shields.io/badge/Estado-EDA%20%2B%20baselines-2F9B77)](#resultados-de-modelado-base)
-[![Licencia](https://img.shields.io/badge/Licencia-MIT-F2B84B)](LICENSE)
+[![Modelos](https://img.shields.io/badge/Modelos-TF--IDF%20%2B%20Transformers-F2B84B)](#modelos-y-resultados)
+[![MAP@3](https://img.shields.io/badge/Mejor%20MAP%403-0.930-2F9B77)](#resultados-finales)
+[![Aplicación](https://img.shields.io/badge/Aplicación-Streamlit-C8553D?logo=streamlit&logoColor=white)](https://proyecto-2grupo-1dssec-10-yakgdjmx6l95w8ozmt5yep.streamlit.app/)
+[![Licencia](https://img.shields.io/badge/Licencia-MIT-52606D)](LICENSE)
 
 **Proyecto 2 · CC3084 Data Science · Sección 10**<br>
-Universidad del Valle de Guatemala · 2026
+Universidad del Valle de Guatemala · Semestre II de 2026
 
-[Informe](report/informe_analisis_exploratorio_MAP.pdf) ·
-[Notebook EDA](notebooks/01_analisis_exploratorio.ipynb) ·
-[Notebook de modelos](notebooks/02_modelos_base_MAP.ipynb) ·
-[Presentación HTML](presentation/presentacion_MAP.html) ·
-[PowerPoint](presentation/presentacion_MAP.pptx) ·
+[Informe final](report/informe_resultados_MAP.pdf) ·
+[Aplicación](https://proyecto-2grupo-1dssec-10-yakgdjmx6l95w8ozmt5yep.streamlit.app/) ·
+[Presentación](presentation/presentacion_MAP.pdf) ·
 [Revisión bibliográfica](report/revision_bibliografica_algoritmos_MAP.pdf) ·
-[Documento del repositorio](file/Presentacion_Repositorio_MAP.pdf)
+[Notebook EDA](notebooks/01_analisis_exploratorio.ipynb)
 
 </div>
 
@@ -28,254 +27,264 @@ Universidad del Valle de Guatemala · 2026
 ## Contenido
 
 - [Descripción](#descripción)
-- [Situación problemática](#situación-problemática)
-- [Objetivos](#objetivos)
-- [Datos](#datos)
-- [Resultados principales](#resultados-principales)
-- [Resultados de modelado base](#resultados-de-modelado-base)
+- [Problema y objetivos](#problema-y-objetivos)
+- [Conjunto de datos](#conjunto-de-datos)
 - [Metodología](#metodología)
+- [Modelos y resultados](#modelos-y-resultados)
+- [Aplicación Streamlit](#aplicación-streamlit)
 - [Estructura del repositorio](#estructura-del-repositorio)
-- [Instalación y ejecución](#instalación-y-ejecución)
-- [Entregables](#entregables)
-- [Limitaciones y próximos pasos](#limitaciones-y-próximos-pasos)
+- [Instalación y reproducción](#instalación-y-reproducción)
+- [Entregables del proyecto](#entregables-del-proyecto)
+- [Lista de verificación para Canvas](#lista-de-verificación-para-canvas)
+- [Limitaciones](#limitaciones)
 - [Equipo](#equipo)
-- [Referencias](#referencias)
 
 ## Descripción
 
-Este repositorio contiene el análisis exploratorio y una comparación reproducible de modelos base para el reto **MAP — Charting Student Math Misunderstandings**. El proyecto estudia explicaciones escritas por estudiantes para identificar patrones relacionados con:
+Este repositorio contiene el análisis exploratorio, la revisión bibliográfica, el entrenamiento de modelos, la evaluación y la aplicación interactiva del reto de Kaggle [MAP - Charting Student Math Misunderstandings](https://www.kaggle.com/competitions/map-charting-student-math-misunderstandings/overview).
 
-1. la corrección de la opción seleccionada;
-2. la calidad del razonamiento presentado; y
-3. la concepción matemática errónea asociada, cuando corresponde.
+El sistema analiza tres componentes de cada respuesta:
 
-La unidad de análisis es una explicación vinculada con una pregunta y una opción de respuesta. Por ello, el problema no consiste únicamente en detectar palabras frecuentes: requiere interpretar conjuntamente el **contexto de la pregunta**, la **opción elegida** y el **razonamiento textual**.
+1. la pregunta matemática;
+2. la opción seleccionada por el estudiante; y
+3. la explicación escrita de su razonamiento.
+
+La salida es un ranking de hasta tres etiquetas `Category:Misconception`. La métrica principal es **MAP@3**, que premia que la etiqueta correcta aparezca en las primeras posiciones.
 
 > [!IMPORTANT]
-> El modelo base se diseñó para apoyar la revisión y priorización docente. Sus predicciones no deben utilizarse como diagnóstico automático definitivo del estudiante.
+> El sistema sirve para apoyar y priorizar la revisión docente. Sus predicciones no sustituyen el juicio pedagógico ni constituyen un diagnóstico definitivo del estudiante.
 
-## Situación problemática
+## Problema y objetivos
 
-Una respuesta correcta no garantiza que el procedimiento utilizado también sea correcto. De forma similar, una opción incorrecta puede provenir de un error de cálculo aislado o de una concepción matemática más persistente.
+### Situación problemática
 
-Revisar manualmente miles de explicaciones abiertas requiere tiempo y conocimiento pedagógico. El Procesamiento del Lenguaje Natural ofrece herramientas para organizar las respuestas y proponer hipótesis sobre los patrones de razonamiento, siempre bajo supervisión humana.
+Una respuesta correcta no garantiza un razonamiento correcto: un estudiante puede acertar por casualidad o aplicando una regla equivocada. De igual forma, una respuesta incorrecta puede deberse a un error aislado o a una concepción matemática errónea persistente.
 
-### Pregunta científica
+Revisar manualmente miles de explicaciones requiere tiempo y conocimiento especializado. El proyecto estudia si el procesamiento de lenguaje natural puede proponer hipótesis útiles y ordenadas sobre esos patrones de razonamiento.
 
-> ¿Qué patrones lingüísticos, estructurales y contextuales permiten distinguir la relación entre corrección de la respuesta, calidad del razonamiento y concepción matemática errónea?
+### Pregunta de investigación
 
-## Objetivos
+> ¿Qué combinación de representación textual, contexto de la pregunta y modelos de clasificación permite ordenar correctamente las concepciones erróneas más probables, y cuánto se conserva ese desempeño ante preguntas no vistas?
 
 ### Objetivo general
 
-Caracterizar el conjunto MAP e implementar modelos base de NLP que permitan ordenar etiquetas compuestas, comparar su desempeño y medir su transferencia a preguntas no vistas.
+Construir, ajustar y comparar modelos supervisados que clasifiquen explicaciones matemáticas en la etiqueta compuesta `Category:Misconception`, fundamentando el preprocesamiento, la validación y la selección final en el análisis exploratorio y en la literatura.
 
 ### Objetivos específicos
 
-- Describir las variables, tipos de datos, valores faltantes y distribución de las observaciones.
-- Analizar el balance de `Category` y `Misconception`.
-- Examinar longitud, ruido, marcadores léxicos y calidad de las explicaciones.
-- Estudiar cruces entre pregunta, opción, categoría y concepción errónea.
-- Detectar riesgos de fuga de información y proponer una estrategia de validación por pregunta.
-- Plantear una ruta de modelado NLP reproducible y pedagógicamente responsable.
-- Entrenar y comparar un prior ingenuo, Complement Naive Bayes, regresión logística y SVM lineal sobre una representación TF-IDF común.
-- Seleccionar el mejor baseline mediante MAP@3 y auditar su generalización con preguntas completas fuera del entrenamiento.
+- Caracterizar la estructura, calidad y desbalance de los datos.
+- Investigar algoritmos usados en calificación automática y detección de concepciones erróneas.
+- Entrenar y comparar un prior contextual, modelos TF-IDF, Transformers y un ensamble calibrado.
+- Evaluar MAP@3, exactitud, top-3 accuracy, macro-F1, F1 ponderado, calibración y costo computacional.
+- Analizar el efecto de la pregunta y la opción mediante ablación y validación con preguntas no vistas.
+- Seleccionar un modelo final y definir un umbral de abstención para derivar casos inciertos al docente.
+- Construir una aplicación que permita clasificar explicaciones, explorar datos y comparar modelos.
 
-## Datos
+## Conjunto de datos
 
-Los datos pertenecen a la competencia de Kaggle [MAP — Charting Student Math Misunderstandings](https://www.kaggle.com/competitions/map-charting-student-math-misunderstandings/overview).
+Los datos provienen de la competencia de Kaggle y están sujetos a sus reglas de uso. El conjunto de entrenamiento local contiene:
 
-### Archivos
+| Característica | Cantidad |
+|---|---:|
+| Observaciones | 36,696 |
+| Variables originales | 7 |
+| Preguntas | 15 |
+| Opciones distintas | 49 |
+| Categorías | 6 |
+| Concepciones erróneas | 35 |
+| Etiquetas compuestas | 65 |
+| Explicaciones únicas | 35,726 |
 
-| Archivo | Uso |
-|---|---|
-| `train.csv` | Datos etiquetados utilizados en el análisis exploratorio. |
-| `test.csv` | Explicaciones sin etiqueta para la competencia. |
-| `sample_submission.csv` | Formato requerido para una eventual entrega en Kaggle. |
+### Variables
 
-### Variables principales
-
-| Variable | Tipo | Descripción |
+| Variable | Tipo | Uso |
 |---|---|---|
-| `row_id` | Identificador | Identificador único de la observación. |
-| `QuestionId` | Categórica | Pregunta matemática asociada. |
-| `QuestionText` | Texto | Enunciado de la pregunta, cuando está disponible. |
-| `MC_Answer` | Categórica/texto | Opción seleccionada por el estudiante. |
-| `StudentExplanation` | Texto | Explicación abierta del razonamiento. |
-| `Category` | Categórica objetivo | Relación entre corrección de la opción y del razonamiento. |
-| `Misconception` | Categórica objetivo | Concepción errónea; no aplica a todas las categorías. |
+| `row_id` | Identificador | Control de filas; no se usa como predictor. |
+| `QuestionId` | Categórica | Contexto y agrupamiento. |
+| `QuestionText` | Texto | Enunciado de la pregunta. |
+| `MC_Answer` | Texto/categórica | Opción seleccionada. |
+| `StudentExplanation` | Texto libre | Predictora textual principal. |
+| `Category` | Categórica | Veracidad y calidad del razonamiento. |
+| `Misconception` | Categórica | Concepción errónea cuando aplica. |
 
-### Perfil del conjunto analizado
+### Hallazgos que condicionan el modelado
 
-| Observaciones | Preguntas | Opciones distintas | Concepciones erróneas | Etiquetas compuestas |
-|:---:|:---:|:---:|:---:|:---:|
-| **36,696** | **15** | **49** | **35** | **65** |
-
-> [!NOTE]
-> Los CSV no se versionan en Git. El notebook localiza automáticamente los archivos en `data/` o `data/raw/`, tanto si se inicia desde la raíz como desde `notebooks/`.
-
-## Resultados principales
-
-### 1. La etiqueta mayoritaria no representa todo el problema
-
-`True_Correct` reúne **40.34%** de las observaciones. Aunque es la categoría más frecuente, usar únicamente *accuracy* favorecería las clases comunes y ocultaría el desempeño sobre concepciones raras.
+- `True_Correct` concentra aproximadamente 40.3 % de las observaciones.
+- Los nulos de `Misconception` son estructurales; se representan con `NA`.
+- Las explicaciones tienen una mediana cercana a 13 palabras.
+- El 78.3 % contiene dígitos, por lo que números y operadores no se eliminan.
+- 32 de las 35 concepciones erróneas aparecen en una sola pregunta.
+- La pregunta y la opción aportan una señal fuerte, pero también pueden funcionar como atajos que reducen la transferencia.
+- La distribución de etiquetas tiene una cola larga: las clases raras explican buena parte del macro-F1 moderado.
 
 <p align="center">
   <img src="report/assets/distribucion_category.png" alt="Distribución de Category" width="820">
 </p>
 
-### 2. La ausencia de `Misconception` es principalmente estructural
-
-Se encontraron **26,836 valores ausentes**, equivalentes a **73.1%** del conjunto. Esto no implica automáticamente mala calidad: en numerosas observaciones la concepción errónea no aplica porque la categoría describe un razonamiento correcto.
-
-**Decisión:** no imputar esta variable con la moda. Debe tratarse como una salida condicional o jerárquica.
-
-### 3. Existe una cola larga de concepciones erróneas
-
-Pocas etiquetas concentran una gran cantidad de ejemplos y muchas concepciones aparecen con baja frecuencia. Esto exige métricas sensibles a clases minoritarias, ponderación cuidadosa y análisis de errores por etiqueta.
-
-<p align="center">
-  <img src="report/assets/distribucion_misconceptions.png" alt="Distribución de concepciones erróneas" width="820">
-</p>
-
-### 4. Las explicaciones son breves y heterogéneas
-
-- La mediana es de **13 palabras** y la media de **15.36**.
-- No hay explicaciones vacías; existen 30 respuestas mínimas de una o dos palabras y valores extremos de longitud.
-- La ortografía, puntuación y uso de mayúsculas son variables.
-- Números, negaciones, operadores y expresiones matemáticas aportan señal y no deben eliminarse indiscriminadamente.
-- Parte del ruido del benchmark fue introducida sintéticamente, por lo que no todo error ortográfico representa conducta natural del estudiante.
-
-<p align="center">
-  <img src="report/assets/distribuciones_variables_texto.png" alt="Distribuciones de variables textuales" width="820">
-</p>
-
-### 5. La pregunta condiciona fuertemente el lenguaje
-
-La distribución de categorías y concepciones cambia entre preguntas. Un *split* aleatorio puede colocar vocabulario casi idéntico de una misma pregunta en entrenamiento y validación, produciendo una estimación optimista de generalización.
-
-<p align="center">
-  <img src="report/assets/cruces_por_pregunta.png" alt="Cruces de etiquetas por pregunta" width="820">
-</p>
-
-**Recomendación:** reportar por separado una partición estratificada —preguntas conocidas— y `GroupKFold` o *leave-one-question-out* —transferencia a preguntas nuevas—. Ninguna debe interpretarse aisladamente, porque 32 de las 35 concepciones aparecen en una sola pregunta.
-
-### Síntesis de decisiones
-
-| Hallazgo | Implicación |
-|---|---|
-| Clases desbalanceadas | Reportar MAP@3 y macro-F1, además de métricas globales. |
-| `Misconception` es condicional | Modelar primero `Category` y luego la concepción, si aplica. |
-| Longitudes altamente correlacionadas | Usarlas como diagnóstico auxiliar, no como evidencia independiente. |
-| Lenguaje dependiente de la pregunta | Validar separando preguntas completas. |
-| Texto informal con notación matemática | Preservar números, operadores, negaciones y unidades. |
-| Etiquetas raras | Revisar desempeño y errores por clase. |
-
-## Resultados de modelado base
-
-Se concatenaron `QuestionText`, `MC_Answer` y `StudentExplanation`. Después de retirar **736 duplicados exactos**, se modelaron **35,960 respuestas** mediante una unión de TF-IDF de palabras —uno y dos términos— y caracteres —tres a cinco—, con **41,763 características**. Todos los clasificadores usaron la misma partición estratificada 80/20 y semilla 42.
-
-| Modelo | MAP@3 | Top-3 accuracy | Macro-F1 | Accuracy |
-|---|---:|---:|---:|---:|
-| **SVM lineal** | **0.882** | **0.969** | **0.498** | **0.806** |
-| Regresión logística —SGD— | 0.847 | 0.962 | 0.479 | 0.750 |
-| Complement Naive Bayes | 0.657 | 0.812 | 0.215 | 0.533 |
-| Prior ingenuo | 0.540 | 0.727 | 0.010 | 0.403 |
-
-<p align="center">
-  <img src="report/assets/modelos/comparacion_modelos_presentacion.png" alt="Comparación de modelos base" width="920">
-</p>
-
-**Selección:** SVM lineal es el mejor baseline porque lidera MAP@3, macro-F1 y accuracy bajo condiciones controladas. No se considera una solución final: en una segunda prueba con tres preguntas completas fuera del entrenamiento, MAP@3 cae a **0.429**, macro-F1 a **0.029** y accuracy a **0.305**. Además, **16.1%** de esas respuestas pertenece a diez etiquetas no observadas durante el ajuste.
-
-<p align="center">
-  <img src="report/assets/modelos/generalizacion_presentacion.png" alt="Generalización del SVM a preguntas no vistas" width="920">
-</p>
-
-Los resultados resumidos se encuentran en [`report/model_results/`](report/model_results/). El modelo serializado y las predicciones fila por fila se generan localmente, pero no se versionan porque son artefactos reproducibles y más voluminosos.
-
 ## Metodología
 
 ```mermaid
 flowchart LR
-    A[CSV del reto MAP] --> B[Inspección y limpieza]
-    B --> C[Estadística descriptiva]
-    C --> D[Análisis categórico]
-    C --> E[Análisis textual]
-    D --> F[Cruces por pregunta]
-    E --> G[Longitud, ruido y léxico]
-    F --> H[Hallazgos y validación]
+    A[Datos MAP] --> B[EDA y limpieza]
+    B --> C[Particiones sin fuga]
+    C --> D[TF-IDF y contexto]
+    C --> E[DeBERTa y MathBERT]
+    D --> F[Prior, SVM y RL jerárquica]
+    E --> G[Calibración]
+    F --> H[Ensamble]
     G --> H
-    H --> I[TF-IDF y modelos base]
-    I --> J[Comparación y prueba agrupada]
-    J --> K[Informe y presentación]
+    H --> I[Evaluación y abstención]
+    I --> J[Informe y aplicación]
 ```
 
-El notebook desarrolla las siguientes fases:
+### Preprocesamiento
 
-1. carga y validación del esquema;
-2. revisión de duplicados y valores faltantes;
-3. estadísticas descriptivas y tablas de frecuencia;
-4. análisis de `Category` y `Misconception`;
-5. creación de variables de longitud y calidad textual;
-6. correlaciones y análisis de valores extremos;
-7. cruces entre pregunta, respuesta y etiquetas;
-8. extracción exploratoria de marcadores léxicos mediante TF-IDF;
-9. síntesis de hallazgos y recomendaciones de modelado.
+- Conversión de opciones LaTeX a texto plano.
+- Minúsculas y unificación de espacios.
+- Conservación de números, operadores, unidades y negaciones.
+- TF-IDF de palabras con unigramas y bigramas.
+- TF-IDF de caracteres de 2 a 5 caracteres para tolerar errores ortográficos.
+- Codificación one-hot de `QuestionId` y del par pregunta-opción.
+- Entrada Transformer con el formato `Question + Answer + Explanation`, truncada a 160 tokens.
+- Agrupamiento de textos repetidos para prevenir fuga entre entrenamiento y evaluación.
 
-### Ruta de modelado
+### Protocolo de validación
 
-```text
-TF-IDF de palabras y caracteres
-             ↓
-Prior + Complement NB + regresión logística + SVM
-             ↓
-SVM lineal seleccionado como baseline reproducible
-             ↓
-Prueba agrupada por QuestionId
-             ↓
-Siguiente fase: DeBERTa / MathBERT → calibración → revisión docente
-```
+- **Prueba principal:** 20 % del conjunto mediante `StratifiedGroupKFold`, manteniendo duplicados en un solo lado.
+- **Validación interna:** ajuste de hiperparámetros dentro del conjunto de entrenamiento.
+- **Validación por preguntas nuevas:** `GroupKFold` de 3 pliegues usando `QuestionId` como grupo.
+- **Semilla:** 42 para los procedimientos reproducibles.
+
+### Métricas
+
+- MAP@3, métrica oficial del reto.
+- Accuracy y top-3 accuracy.
+- Macro-F1 y F1 ponderado.
+- Expected Calibration Error (ECE).
+- Cobertura y exactitud bajo abstención.
+- Tiempos de entrenamiento y predicción.
+
+## Modelos y resultados
+
+### Modelos evaluados
+
+| Familia | Modelo | Función |
+|---|---|---|
+| Referencia | Prior por pregunta y opción | Mide cuánto se logra sin leer la explicación. |
+| Lineal | TF-IDF + SVM lineal | Clasificador rápido para matrices dispersas. |
+| Lineal jerárquico | TF-IDF + regresión logística | Entrega probabilidades y restringe etiquetas incompatibles. |
+| Transformer | DeBERTa-v3-base | Representación contextual general. |
+| Transformer de dominio | MathBERT | Representación preentrenada con texto matemático. |
+| Ensamble | MathBERT + regresión jerárquica | Combina evidencia contextual y léxica calibrada. |
+
+### Resultados finales
+
+| Modelo | MAP@3 | Accuracy | Top-3 | Macro-F1 | Entrenamiento |
+|---|---:|---:|---:|---:|---:|
+| Prior por pregunta y opción | 0.838 | 0.695 | 0.989 | 0.280 | 0.01 s |
+| TF-IDF + SVM lineal | 0.919 | **0.855** | 0.986 | 0.522 | 9.74 s |
+| TF-IDF + regresión logística jerárquica | 0.921 | 0.851 | **0.995** | 0.522 | 56.90 s |
+| DeBERTa-v3 | 0.914 | 0.847 | 0.986 | 0.407 | 821.58 s |
+| MathBERT | 0.926 | 0.862 | 0.993 | 0.500 | 455.08 s |
+| **Ensamble calibrado** | **0.930** | **0.868** | **0.995** | **0.531** | 511.98 s |
+
+<p align="center">
+  <img src="report/assets/modelos/comparacion_metricas.png" alt="Comparación de métricas de los modelos" width="920">
+</p>
+
+### Selección del modelo
+
+El modelo seleccionado es el **ensamble calibrado de MathBERT y regresión logística jerárquica**:
+
+- temperatura del Transformer: `T = 1.10`;
+- peso de MathBERT: `α = 0.65`;
+- MAP@3 de prueba: `0.930`;
+- macro-F1: `0.531`;
+- ECE: aproximadamente `0.023`.
+
+La regresión logística jerárquica se conserva como alternativa ligera para despliegues sin GPU y la SVM como alternativa de reentrenamiento rápido.
+
+### Abstención y supervisión humana
+
+Con un umbral de confianza de `0.87`:
+
+- cobertura: 71.3 % de los casos;
+- exactitud entre casos aceptados: 94.7 %;
+- los casos restantes se derivan a revisión docente.
+
+### Preguntas no vistas
+
+| Modelo | MAP@3 en preguntas no vistas |
+|---|---:|
+| Prior por pregunta y opción | 0.540 |
+| Regresión logística con texto solamente | 0.461 |
+| Regresión logística con texto, pregunta y opción | 0.391 |
+| MathBERT | 0.324 |
+| DeBERTa-v3 | 0.298 |
+
+El contexto mejora considerablemente el desempeño en preguntas conocidas, pero no transfiere bien a preguntas nuevas. Por ello, los resultados deben interpretarse como válidos para el banco de preguntas estudiado.
+
+<p align="center">
+  <img src="report/assets/modelos/generalizacion_preguntas.png" alt="Generalización a preguntas no vistas" width="820">
+</p>
+
+## Aplicación Streamlit
+
+La aplicación está implementada en [`app/app.py`](app/app.py) y contiene cuatro secciones:
+
+1. **Clasificar una explicación:** recibe pregunta, opción y explicación; devuelve tres etiquetas ordenadas.
+2. **Explorar los datos:** filtros, distribuciones, variables derivadas y composición por pregunta.
+3. **Rendimiento de los modelos:** métricas, tiempos, generalización, calibración, abstención e hiperparámetros.
+4. **Acerca del proyecto:** contexto, modelos, limitaciones y uso responsable.
+
+Funciones requeridas por la guía:
+
+- selección de uno o varios modelos;
+- comparación visual de predicciones;
+- gráficas interactivas de rendimiento;
+- interruptor para mostrar u ocultar el rendimiento;
+- preprocesamiento automático e inadvertido para el usuario;
+- interfaz con tema claro, azul institucional y colores semánticos.
+
+**Aplicación publicada:**<br>
+<https://proyecto-2grupo-1dssec-10-yakgdjmx6l95w8ozmt5yep.streamlit.app/>
+
+> [!NOTE]
+> GitHub no almacena los pesos ajustados de DeBERTa y MathBERT por su tamaño. La versión web clasifica con los modelos TF-IDF versionados y presenta las métricas de todos los modelos. Para habilitar Transformers en inferencia se deben descargar sus pesos o configurar los repositorios correspondientes en los secretos de Streamlit.
+
+<p align="center">
+  <img src="report/assets/app/app_clasificar.png" alt="Clasificación en la aplicación" width="820">
+</p>
 
 ## Estructura del repositorio
 
 ```text
 Proyecto-2_Grupo-1_DS_Sec-10/
-├── data/                         # Datos locales; ignorados por Git
-│   ├── train.csv
-│   ├── test.csv
-│   └── sample_submission.csv
-├── file/
-│   ├── Presentacion_Repositorio_MAP.docx
-│   └── Presentacion_Repositorio_MAP.pdf
-├── instructions/
-│   └── Proyecto 2. Análisis Exploratorio. 2026.pdf
+├── app/
+│   ├── app.py
+│   ├── requirements.txt
+│   └── datos/
+├── data/                         # Datos de Kaggle, no redistribuidos en GitHub
+├── kaggle/                       # Kernels para DeBERTa y MathBERT
+├── models/                       # Modelos TF-IDF y configuración del ensamble
 ├── notebooks/
 │   ├── 01_analisis_exploratorio.ipynb
-│   ├── 02_modelos_base_MAP.ipynb
-│   ├── entrenar_modelos_base_MAP.py
-│   ├── generar_graficas_presentacion_MAP.py
-│   └── exportar_figuras.py
-├── presentation/
-│   ├── presentacion_MAP.html
-│   ├── presentacion_MAP.pptx
-│   ├── presentacion_MAP.pdf
-│   └── generar_presentacion.py
+│   ├── 02_modelado.py
+│   ├── 03_transformer.py
+│   └── 04_ensamble.py
+├── presentation/                 # HTML, PDF, PPTX y guion
 ├── report/
-│   ├── assets/                   # Figuras extraídas del notebook
-│   ├── model_results/            # Métricas, predicciones y resultados por clase
-│   ├── informe_analisis_exploratorio_MAP.tex
-│   ├── informe_analisis_exploratorio_MAP.pdf
-│   ├── revision_bibliografica_algoritmos_MAP.tex
+│   ├── assets/
+│   ├── informe_resultados_MAP.docx
+│   ├── informe_resultados_MAP.pdf
 │   └── revision_bibliografica_algoritmos_MAP.pdf
-├── .gitignore
-├── LICENSE
+├── results/                      # Métricas, particiones y predicciones
+├── map_modelos.py                # Preprocesamiento y clases compartidas
 ├── requirements.txt
-├── validate_project.py
 └── README.md
 ```
 
-## Instalación y ejecución
+## Instalación y reproducción
 
 ### 1. Clonar el repositorio
 
@@ -284,50 +293,38 @@ git clone https://github.com/DanielBarillasM/Proyecto-2_Grupo-1_DS_Sec-10.git
 cd Proyecto-2_Grupo-1_DS_Sec-10
 ```
 
-### 2. Crear un entorno virtual
+### 2. Crear un entorno para análisis y modelos lineales
+
+```bash
+python -m venv .venv
+```
 
 Windows PowerShell:
 
 ```powershell
-python -m venv .venv
 .\.venv\Scripts\Activate.ps1
+python -m pip install --upgrade pip
+pip install -r requirements.txt
 ```
 
 Linux o macOS:
 
 ```bash
-python3 -m venv .venv
 source .venv/bin/activate
-```
-
-### 3. Instalar dependencias
-
-```bash
 python -m pip install --upgrade pip
 pip install -r requirements.txt
 ```
 
-### 4. Descargar los datos
+### 3. Descargar los datos
 
-Después de configurar las credenciales de la API de Kaggle y aceptar las reglas de la competencia:
+Después de aceptar las reglas de la competencia y configurar la API de Kaggle:
 
 ```bash
-mkdir -p data
-kaggle competitions download \
-  -c map-charting-student-math-misunderstandings \
-  -p data
-python -m zipfile -e \
-  data/map-charting-student-math-misunderstandings.zip \
-  data
+kaggle competitions download -c map-charting-student-math-misunderstandings -p data
+python -m zipfile -e data/map-charting-student-math-misunderstandings.zip data
 ```
 
-En PowerShell puede crear la carpeta con:
-
-```powershell
-New-Item -ItemType Directory -Force data
-```
-
-Al terminar, compruebe esta estructura:
+La estructura esperada es:
 
 ```text
 data/train.csv
@@ -335,136 +332,93 @@ data/test.csv
 data/sample_submission.csv
 ```
 
-> [!NOTE]
-> También se admite la estructura `data/raw/`; la celda de carga informa las rutas revisadas si no encuentra los archivos.
-
-### 5. Abrir los notebooks
+### 4. Reproducir los modelos lineales
 
 ```bash
-jupyter lab notebooks/01_analisis_exploratorio.ipynb
-jupyter lab notebooks/02_modelos_base_MAP.ipynb
+python notebooks/02_modelado.py
 ```
 
-Ejecute las celdas en orden únicamente si necesita reproducir el análisis. Ambos notebooks versionados contienen salidas verificadas; el de modelos se ejecutó de principio a fin sin errores. Para actualizar los activos del EDA:
+Este script genera los modelos de `models/`, las métricas de `results/` y las figuras de modelado.
+
+### 5. Entrenar Transformers
+
+El entrenamiento completo se recomienda en Kaggle con GPU. Los kernels reproducibles se encuentran en `kaggle/`.
+
+Para una ejecución manual se requiere un entorno separado con PyTorch y Hugging Face Transformers:
 
 ```bash
-python notebooks/exportar_figuras.py
+pip install torch transformers accelerate
+python notebooks/03_transformer.py --modelo microsoft/deberta-v3-base --prefijo deberta
+python notebooks/03_transformer.py --modelo tbs17/MathBERT --prefijo mathbert
 ```
 
-Para reproducir únicamente los modelos base desde la terminal:
+### 6. Calibrar y construir el ensamble
 
 ```bash
-python notebooks/entrenar_modelos_base_MAP.py
+python notebooks/04_ensamble.py
 ```
 
-Este comando vuelve a entrenar los cuatro modelos, por lo que puede tardar varios minutos. Escribe métricas y predicciones en `report/model_results/`, figuras en `report/assets/modelos/` y el mejor artefacto en `models/`. El modelo, las predicciones completas y el guion de exposición son archivos locales ignorados por Git.
+### 7. Ejecutar la aplicación
 
-### 6. Compilar el informe LaTeX — opcional
-
-Desde la carpeta `report/`, con una distribución de LaTeX instalada:
+Se recomienda usar un entorno exclusivo para la aplicación:
 
 ```bash
-cd report
-latexmk -pdf -interaction=nonstopmode -halt-on-error informe_analisis_exploratorio_MAP.tex
-latexmk -pdf -interaction=nonstopmode -halt-on-error revision_bibliografica_algoritmos_MAP.tex
+python -m venv .venv-app
+# Active el entorno según su sistema operativo
+pip install -r app/requirements.txt
+streamlit run app/app.py
 ```
 
-Para limpiar archivos auxiliares sin eliminar el PDF:
+## Entregables del proyecto
 
-```bash
-latexmk -c informe_analisis_exploratorio_MAP.tex
-```
+| Entregable | Ruta o enlace |
+|---|---|
+| Informe final en PDF | [`report/informe_resultados_MAP.pdf`](report/informe_resultados_MAP.pdf) |
+| Informe editable | [`report/informe_resultados_MAP.docx`](report/informe_resultados_MAP.docx) |
+| Revisión bibliográfica | [`report/revision_bibliografica_algoritmos_MAP.pdf`](report/revision_bibliografica_algoritmos_MAP.pdf) |
+| Código de modelado lineal | [`notebooks/02_modelado.py`](notebooks/02_modelado.py) |
+| Código de Transformers | [`notebooks/03_transformer.py`](notebooks/03_transformer.py) |
+| Código del ensamble | [`notebooks/04_ensamble.py`](notebooks/04_ensamble.py) |
+| Aplicación | [`app/app.py`](app/app.py) |
+| Resultados reproducibles | [`results/`](results/) |
+| Presentación PDF | [`presentation/presentacion_MAP.pdf`](presentation/presentacion_MAP.pdf) |
+| Presentación editable | [`presentation/presentacion_MAP.pptx`](presentation/presentacion_MAP.pptx) |
+| Repositorio | <https://github.com/DanielBarillasM/Proyecto-2_Grupo-1_DS_Sec-10> |
+| Aplicación web | <https://proyecto-2grupo-1dssec-10-yakgdjmx6l95w8ozmt5yep.streamlit.app/> |
 
-### 7. Abrir o regenerar la presentación
+## Limitaciones
 
-Abra [`presentation/presentacion_MAP.html`](presentation/presentacion_MAP.html) en un navegador moderno. Sus imágenes se cargan desde `report/assets/` mediante rutas relativas.
-
-Controles disponibles:
-
-- `←` / `→`, `Page Up` / `Page Down` o espacio: navegar.
-- `Home` / `End`: ir al inicio o al final.
-- `O`: activar la vista general.
-- `F`: activar pantalla completa.
-- Impresión del navegador: exportar las diapositivas a PDF.
-
-La versión editable en PowerPoint está en [`presentation/presentacion_MAP.pptx`](presentation/presentacion_MAP.pptx). Puede regenerarse a partir de los mismos activos con:
-
-```bash
-python presentation/generar_presentacion.py
-```
-
-Para comprobar de una vez la ejecución almacenada, las rutas de imágenes y los formatos entregables:
-
-```bash
-python validate_project.py
-```
-
-## Entregables
-
-| Entregable | Formato | Enlace |
-|---|:---:|---|
-| Notebook de análisis exploratorio | `.ipynb` | [Abrir notebook](notebooks/01_analisis_exploratorio.ipynb) |
-| Notebook ejecutado de modelos base | `.ipynb` | [Abrir notebook](notebooks/02_modelos_base_MAP.ipynb) |
-| Métricas comparativas | `.csv` | [Abrir resultados](report/model_results/comparacion_modelos.csv) |
-| Informe científico completo | `.pdf` | [Abrir informe](report/informe_analisis_exploratorio_MAP.pdf) |
-| Fuente editable del informe | `.tex` | [Abrir fuente](report/informe_analisis_exploratorio_MAP.tex) |
-| Presentación interactiva | `.html` | [Abrir presentación](presentation/presentacion_MAP.html) |
-| Presentación PowerPoint | `.pptx` | [Descargar PowerPoint](presentation/presentacion_MAP.pptx) |
-| Copia PDF de la presentación | `.pdf` | [Abrir presentación](presentation/presentacion_MAP.pdf) |
-| Revisión bibliográfica | `.pdf` | [Abrir revisión](report/revision_bibliografica_algoritmos_MAP.pdf) |
-| Fuente de la revisión bibliográfica | `.tex` | [Abrir fuente](report/revision_bibliografica_algoritmos_MAP.tex) |
-| Presentación documental del repositorio | `.pdf` | [Abrir PDF](file/Presentacion_Repositorio_MAP.pdf) |
-| Documento editable del repositorio | `.docx` | [Descargar DOCX](file/Presentacion_Repositorio_MAP.docx) |
-| Instrucciones académicas | `.pdf` | [Abrir instrucciones](instructions/Proyecto%202.%20Análisis%20Exploratorio.%202026.pdf) |
-
-## Limitaciones y próximos pasos
-
-- El conjunto no contiene variables demográficas, por lo que no permite evaluar equidad entre subgrupos estudiantiles.
-- El benchmark completo combina respuestas originales y sintéticas; esto debe considerarse al interpretar el ruido textual.
-- Las concepciones raras disponen de pocos ejemplos.
-- La asociación léxica no demuestra causalidad pedagógica.
-- La evaluación debe evitar fuga de información entre preguntas; `QuestionId` se usa para agrupar, no como predictor.
-- La prueba agrupada confirma una transferencia limitada: MAP@3 0.429 y macro-F1 0.029.
-- Diez etiquetas no aparecen en el entrenamiento de la partición agrupada y afectan 16.1% de sus respuestas de validación.
-- Deben hacerse `commit` y `push` de los entregables finales con autoría clara para cada integrante.
-
-### Siguiente experimento recomendado
-
-1. mantener SVM lineal como baseline reproducible;
-2. comparar clasificación plana y jerárquica;
-3. entrenar DeBERTa o MathBERT con pregunta, opción y explicación;
-4. conservar la misma prueba agrupada por `QuestionId` y reportar MAP@3, macro-F1 y resultados por pregunta;
-5. calibrar los puntajes top-3 y definir un criterio de abstención;
-6. revisar cualitativamente errores, clases raras y preguntas no vistas.
+- Las concepciones raras disponen de muy pocos ejemplos.
+- El desempeño cae al evaluar preguntas completamente nuevas.
+- `QuestionId` mejora las preguntas conocidas, pero puede actuar como atajo contextual.
+- Los pesos Transformer no se versionan en GitHub por su tamaño.
+- El conjunto no incluye variables demográficas para auditar equidad entre subgrupos.
+- La asociación estadística entre texto y etiqueta no demuestra causalidad pedagógica.
+- Las predicciones deben mantenerse bajo supervisión humana.
 
 ## Equipo
 
-| Integrante | Rol general |
+| Integrante | Participación general |
 |---|---|
 | **Jorge Gabriel Palacios Sales** | Integrante del grupo. |
 | **Pablo Daniel Barillas Moreno** | Integrante del grupo. |
 | **Roberto Emiliano Otoniel Camposeco Torres** | Integrante del grupo. |
 | **Abby Sofia Donis Agreda** | Integrante del grupo. |
 
-> La evaluación del curso considera las contribuciones individuales reflejadas en el historial de Git.
+La evaluación individual del curso se basa en las contribuciones registradas en el trabajo grupal y en el historial de GitHub.
 
-## Referencias
+## Referencias principales
 
-- Devlin, J., Chang, M.-W., Lee, K., & Toutanova, K. (2019). BERT: Pre-training of deep bidirectional transformers for language understanding. *NAACL-HLT 2019*, 4171–4186. https://doi.org/10.18653/v1/N19-1423
+- Kaggle. (2025). *MAP - Charting student math misunderstandings* [Competencia de ciencia de datos]. <https://www.kaggle.com/competitions/map-charting-student-math-misunderstandings>
 - He, P., Liu, X., Gao, J., & Chen, W. (2021). DeBERTa: Decoding-enhanced BERT with disentangled attention. *International Conference on Learning Representations*.
-- Kassis, T., Agarwal, V., He, Y., Patel, D., & Brueckner, A. M. (2026). *Scientific agent skills: A library of procedural knowledge for research agents* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2609.00065
-- King, J., Smith, K., Burleigh, L., Crossley, S., Demkin, M., & Reade, W. (2025). *MAP — Charting student math misunderstandings*. Kaggle. https://www.kaggle.com/competitions/map-charting-student-math-misunderstandings
-- Pedregosa, F., Varoquaux, G., Gramfort, A., Michel, V., Thirion, B., Grisel, O., et al. (2011). Scikit-learn: Machine learning in Python. *Journal of Machine Learning Research, 12*, 2825–2830.
-- Rittle-Johnson, B., Adler, R., Durkin, K., Burleigh, L., King, J., & Crossley, S. (2025). Detecting math misconceptions: An AI benchmark dataset. *AIME-Con Works in Progress*, 20–24. https://aclanthology.org/2025.aimecon-wip.3/
-- Salton, G., & Buckley, C. (1988). Term-weighting approaches in automatic text retrieval. *Information Processing & Management, 24*(5), 513–523. https://doi.org/10.1016/0306-4573(88)90021-0
-- Shen, J. T., Yamashita, M., Prihar, E., Heffernan, N., Wu, X., Graff, B., & Lee, D. (2021). *MathBERT: A pre-trained language model for general NLP tasks in mathematics education* [Preprint]. arXiv. https://doi.org/10.48550/arXiv.2106.07340
+- Pedregosa, F., et al. (2011). Scikit-learn: Machine learning in Python. *Journal of Machine Learning Research, 12*, 2825-2830.
+- Shen, J. T., et al. (2021). MathBERT: A pre-trained language model for general NLP tasks in mathematics education. *arXiv*. <https://doi.org/10.48550/arXiv.2106.07340>
+- Salton, G., & Buckley, C. (1988). Term-weighting approaches in automatic text retrieval. *Information Processing & Management, 24*(5), 513-523. <https://doi.org/10.1016/0306-4573(88)90021-0>
 
 ---
 
 <div align="center">
 
-**Comprender el error es el primer paso para enseñar mejor.**
-
-Si este repositorio le resulta útil, puede citar la competencia y el benchmark incluidos en la sección de referencias.
+**Grupo 1 · Data Science · Sección 10 · UVG**
 
 </div>
