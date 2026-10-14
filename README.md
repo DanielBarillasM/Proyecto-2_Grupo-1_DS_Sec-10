@@ -35,7 +35,6 @@ Universidad del Valle de Guatemala · Semestre II de 2026
 - [Estructura del repositorio](#estructura-del-repositorio)
 - [Instalación y reproducción](#instalación-y-reproducción)
 - [Entregables del proyecto](#entregables-del-proyecto)
-- [Lista de verificación para Canvas](#lista-de-verificación-para-canvas)
 - [Limitaciones](#limitaciones)
 - [Equipo](#equipo)
 
